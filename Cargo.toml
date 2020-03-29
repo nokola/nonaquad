@@ -1,0 +1,30 @@
+[package]
+name = 'nvg_miniquad'
+version = '0.1.0'
+authors = ['Nokola <nikolami@outlook.com>']
+edition = '2018'
+
+[dependencies]
+nvg = "0.5.9"
+slab = "0.4.2"
+anyhow = "1.0.26"
+
+[dependencies.miniquad]
+path = '..\miniquad-nokola' # Sync at this commit: https://github.com/nokola/miniquad/commit/b980915c62337bf60afbe8708569977adb4c0d74
+
+# Uncomment for small builds
+[profile.release]
+lto = "thin"
+
+[package.metadata.android]
+# Specifies the array of targets to build for.
+# Defaults to "armv7-linux-androideabi", "aarch64-linux-android", "i686-linux-android".
+build_targets = [ "armv7-linux-androideabi" ]
+fullscreen = true
+opengles_version_major = 2
+opengles_version_minor = 0
+package_name = "nokola.app.drawaa"
+
+[package.metadata.android.application_attributes]
+"android:debuggable" = "true"
+"android:hardwareAccelerated" = "true"
