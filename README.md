@@ -1,7 +1,10 @@
 
 # nvg-miniquad
-NanoVG Vector AA drawing for the miniquad Rust library for Android, WASM, Desktop.
-2D drawing and vector library that results in small and fast executables for mobile, desktop and web. Focus on minimal dependencies, ease-of-use, safety, and speed.
+Vector AA drawing for Android, WASM, Desktop in Rust. Built on top of NanoVG.
+
+Runtime focus on small and fast executables for mobile, desktop and web. 
+
+Development focus on minimal dependencies, ease-of-use, safety.
 
 A port of [nvg-gl](https://github.com/sunli829/nvg/tree/master/nvg-gl) for [miniquad](https://github.com/not-fl3/miniquad).
 
@@ -83,6 +86,8 @@ Then open `http://localhost:8000`
 
 Recommended way to build for android is using Docker.   
 miniquad use slightly modifed version of `cargo-apk`
+
+**Note:** on Windows if you see git error during `cargo apk build --example drawaa`, update your .git folder to be not read-only. See related [Docker issue #6016](https://github.com/docker/for-win/issues/6016)
 
 ```
 docker run --rm -v $(pwd)":/root/src" -w /root/src notfl3/cargo-apk cargo apk build --example drawaa
