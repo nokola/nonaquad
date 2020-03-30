@@ -102,8 +102,13 @@ No code modifications for Android required, everything should just works.
 ## iOS
 Not supported (yet)
 
-# Notes
-Even though you can use the library today, this is ongoing work-in-progress to move it to miniquad's Context calls instead of straight-up GL* calls.
+# Roadmap
+The goal of nvg-miniquad is to have a stable, high-quality vector library on mobile, web, and desktop from the same source code.
+I will use it as a building block for a general purpose cross-platform app framework.
+Overview of changes coming up:
+1. Move to miniquad's Context instead of raw OpenGL calls. This will make it easier to port to Metal later.
+    a. Update miniquad's Context to support whatever nvg-miniquad needs
+2. iOS support
 
 # Contributing
 See TODO-s in source code or anything else goes
