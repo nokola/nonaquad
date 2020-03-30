@@ -100,14 +100,18 @@ With "log-impl" enabled all log calls will be forwarded to adb console.
 No code modifications for Android required, everything should just works.
 
 ## iOS
-Not supported (yet)
+Not supported yet
 
 # Roadmap
 The goal of nvg-miniquad is to have a stable, high-quality vector library on mobile, web, and desktop from the same source code.
+
 I will use it as a building block for a general purpose cross-platform app framework.
+
 Overview of changes coming up:
 1. Move to miniquad's Context instead of raw OpenGL calls. This will make it easier to port to Metal later.
+
     a. Update miniquad's Context to support whatever nvg-miniquad needs
+
 2. iOS support
 
 # Contributing
