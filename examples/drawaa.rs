@@ -17,7 +17,6 @@ struct Stage {
     pipeline: Pipeline,
     bindings: Bindings,
     nvg_context: nvg::Context<nvgimpl::Renderer>,
-    renderer: nvgimpl::Renderer,
 }
 
 impl Stage {
@@ -64,12 +63,10 @@ impl Stage {
             shader,
         );
 
-        let renderer = nvgimpl::Renderer::create().unwrap();
         Stage {
             pipeline,
             bindings,
             nvg_context,
-            renderer,
         }
     }
 }
@@ -78,7 +75,7 @@ impl EventHandler for Stage {
     fn update(&mut self, _ctx: &mut Context) {}
 
     fn draw(&mut self, ctx: &mut Context) {
-        let t = date::now();
+        // let t = date::now();
 
         unsafe {
             glClearColor(0.5, 0.5, 0.2, 1.0); // YELLOW

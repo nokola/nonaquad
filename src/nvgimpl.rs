@@ -11,18 +11,18 @@ struct Shader {
     loc_tex: i32,
     loc_vertex: u32,
     loc_tcoord: u32,
-    loc_scissorMat: i32,
-    loc_paintMat: i32,
-    loc_innerCol: i32,
-    loc_outerCol: i32,
-    loc_scissorExt: i32,
-    loc_scissorScale: i32,
+    loc_scissor_mat: i32,
+    loc_paint_mat: i32,
+    loc_inner_col: i32,
+    loc_outer_col: i32,
+    loc_scissor_ext: i32,
+    loc_scissor_scale: i32,
     loc_extent: i32,
     loc_radius: i32,
     loc_feather: i32,
-    loc_strokeMult: i32,
-    loc_strokeThr: i32,
-    loc_texType: i32,
+    loc_stroke_mult: i32,
+    loc_stroke_thr: i32,
+    loc_tex_type: i32,
     loc_type: i32,
 }
 
@@ -99,18 +99,18 @@ impl Shader {
             loc_vertex: glGetAttribLocation(prog, std::ffi::CString::new("vertex").unwrap().as_ptr() as *const GLchar) as u32,
             loc_tcoord: glGetAttribLocation(prog, std::ffi::CString::new("tcoord").unwrap().as_ptr() as *const GLchar) as u32,
 
-            loc_scissorMat: glGetUniformLocation(prog, std::ffi::CString::new("scissorMat").unwrap().as_ptr() as *const GLchar),
-            loc_paintMat: glGetUniformLocation(prog, std::ffi::CString::new("paintMat").unwrap().as_ptr() as *const GLchar),
-            loc_innerCol: glGetUniformLocation(prog, std::ffi::CString::new("innerCol").unwrap().as_ptr() as *const GLchar),
-            loc_outerCol: glGetUniformLocation(prog, std::ffi::CString::new("outerCol").unwrap().as_ptr() as *const GLchar),
-            loc_scissorExt: glGetUniformLocation(prog, std::ffi::CString::new("scissorExt").unwrap().as_ptr() as *const GLchar),
-            loc_scissorScale: glGetUniformLocation(prog, std::ffi::CString::new("scissorScale").unwrap().as_ptr() as *const GLchar),
+            loc_scissor_mat: glGetUniformLocation(prog, std::ffi::CString::new("scissorMat").unwrap().as_ptr() as *const GLchar),
+            loc_paint_mat: glGetUniformLocation(prog, std::ffi::CString::new("paintMat").unwrap().as_ptr() as *const GLchar),
+            loc_inner_col: glGetUniformLocation(prog, std::ffi::CString::new("innerCol").unwrap().as_ptr() as *const GLchar),
+            loc_outer_col: glGetUniformLocation(prog, std::ffi::CString::new("outerCol").unwrap().as_ptr() as *const GLchar),
+            loc_scissor_ext: glGetUniformLocation(prog, std::ffi::CString::new("scissorExt").unwrap().as_ptr() as *const GLchar),
+            loc_scissor_scale: glGetUniformLocation(prog, std::ffi::CString::new("scissorScale").unwrap().as_ptr() as *const GLchar),
             loc_extent: glGetUniformLocation(prog, std::ffi::CString::new("extent").unwrap().as_ptr() as *const GLchar),
             loc_radius: glGetUniformLocation(prog, std::ffi::CString::new("radius").unwrap().as_ptr() as *const GLchar),
             loc_feather: glGetUniformLocation(prog, std::ffi::CString::new("feather").unwrap().as_ptr() as *const GLchar),
-            loc_strokeMult: glGetUniformLocation(prog, std::ffi::CString::new("strokeMult").unwrap().as_ptr() as *const GLchar),
-            loc_strokeThr: glGetUniformLocation(prog, std::ffi::CString::new("strokeThr").unwrap().as_ptr() as *const GLchar),
-            loc_texType: glGetUniformLocation(prog, std::ffi::CString::new("texType").unwrap().as_ptr() as *const GLchar),
+            loc_stroke_mult: glGetUniformLocation(prog, std::ffi::CString::new("strokeMult").unwrap().as_ptr() as *const GLchar),
+            loc_stroke_thr: glGetUniformLocation(prog, std::ffi::CString::new("strokeThr").unwrap().as_ptr() as *const GLchar),
+            loc_tex_type: glGetUniformLocation(prog, std::ffi::CString::new("texType").unwrap().as_ptr() as *const GLchar),
             loc_type: glGetUniformLocation(prog, std::ffi::CString::new("type").unwrap().as_ptr() as *const GLchar),
         })
     }
@@ -261,22 +261,22 @@ impl Renderer {
     unsafe fn set_uniforms(&self, offset: usize, img: Option<usize>) {
         let uniforms = &self.uniforms[offset];
         // glBindBuffer(GL_UNIFORM_BUFFER, self.frag_buf); // TODOKOLA: added
-        glUniformMatrix4fv(self.shader.loc_scissorMat, 1, 0, &uniforms.scissor_mat as *const _ as *const f32);
-        glUniformMatrix4fv(self.shader.loc_paintMat, 1, 0, &uniforms.paint_mat as *const _ as *const f32);
+        glUniformMatrix4fv(self.shader.loc_scissor_mat, 1, 0, &uniforms.scissor_mat as *const _ as *const f32);
+        glUniformMatrix4fv(self.shader.loc_paint_mat, 1, 0, &uniforms.paint_mat as *const _ as *const f32);
 
-        glUniform4fv(self.shader.loc_innerCol, 1, &uniforms.inner_color as *const _ as *const f32);
-        glUniform4fv(self.shader.loc_outerCol, 1, &uniforms.outer_color as *const _ as *const f32);
+        glUniform4fv(self.shader.loc_inner_col, 1, &uniforms.inner_color as *const _ as *const f32);
+        glUniform4fv(self.shader.loc_outer_col, 1, &uniforms.outer_color as *const _ as *const f32);
 
-        glUniform2fv(self.shader.loc_scissorExt, 1, &uniforms.scissor_ext as *const _ as *const f32);
-        glUniform2fv(self.shader.loc_scissorScale, 1, &uniforms.scissor_scale as *const _ as *const f32);
+        glUniform2fv(self.shader.loc_scissor_ext, 1, &uniforms.scissor_ext as *const _ as *const f32);
+        glUniform2fv(self.shader.loc_scissor_scale, 1, &uniforms.scissor_scale as *const _ as *const f32);
         glUniform2fv(self.shader.loc_extent, 1, &uniforms.extent as *const _ as *const f32);
 
         glUniform1f(self.shader.loc_radius, uniforms.radius);
         glUniform1f(self.shader.loc_feather, uniforms.feather);
-        glUniform1f(self.shader.loc_strokeMult, uniforms.stroke_mult);
-        glUniform1f(self.shader.loc_strokeThr, uniforms.stroke_thr);
+        glUniform1f(self.shader.loc_stroke_mult, uniforms.stroke_mult);
+        glUniform1f(self.shader.loc_stroke_thr, uniforms.stroke_thr);
 
-        glUniform1i(self.shader.loc_texType, uniforms.tex_type);
+        glUniform1i(self.shader.loc_tex_type, uniforms.tex_type);
         glUniform1i(self.shader.loc_type, uniforms.type_);
 
         // glBindBufferRange( // TODOKOLA
