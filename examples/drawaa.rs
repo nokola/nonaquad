@@ -21,8 +21,8 @@ struct Stage {
 
 impl Stage {
     pub fn new(ctx: &mut Context) -> Stage {
-        let renderer1 = nvgimpl::Renderer::create().unwrap();
-        let nvg_context = nvg::Context::create(renderer1).unwrap();
+        let renderer = nvgimpl::Renderer::create().unwrap();
+        let nvg_context = nvg::Context::create(renderer).unwrap();
 
         #[rustfmt::skip]
         let vertices: [Vertex; 4] = [
