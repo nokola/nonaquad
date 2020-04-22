@@ -12,7 +12,7 @@ enum ShaderType {
     Image,
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 enum CallType {
     Fill,
     ConvexFill,
@@ -247,24 +247,23 @@ impl<'a> Renderer<'a> {
         // glDisable(GL_STENCIL_TEST);
     }
 
-    unsafe fn do_convex_fill(&self, call: &Call) {
-        // TODOKOLA: ADD support
-        // let paths = &self.paths[call.path_offset..call.path_offset + call.path_count];
-        // self.set_uniforms(call.uniform_offset, call.image);
-        // for path in paths {
-        //     glDrawArrays(
-        //         GL_TRIANGLE_FAN,
-        //         path.fill_offset as i32,
-        //         path.fill_count as i32,
-        //     );
-        //     if path.stroke_count > 0 {
-        //         glDrawArrays(
-        //             GL_TRIANGLE_STRIP,
-        //             path.stroke_offset as i32,
-        //             path.stroke_count as i32,
-        //         );
-        //     }
-        // }
+    unsafe fn do_convex_fill(ctx: &mut MiniContext, paths: &[GLPath], call: &Call, uniforms: &shader::FragUniforms) {
+        Self::set_uniforms(ctx, uniforms, call.image);
+        for path in paths {
+            // glDrawArrays( // TODOKOLA: ADD support
+            //     GL_TRIANGLE_FAN,
+            //     path.fill_offset as i32,
+            //     path.fill_count as i32,
+            // );
+        
+            // if path.stroke_count > 0 { // TODOKOLA: ADD support
+            //     glDrawArrays(
+            //         GL_TRIANGLE_STRIP,
+            //         path.stroke_offset as i32,
+            //         path.stroke_count as i32,
+            //     );
+            // }
+        }
     }
 
     unsafe fn do_stroke(&self, call: &Call) {
@@ -588,19 +587,24 @@ impl renderer::Renderer for Renderer<'_> {
                     //     blend.dst_alpha,
                     // );
 
+                    // println!("Call {:?}", call.call_type); // DEBUG
+                    let uniforms = &self.uniforms[call.uniform_offset];
                     match call.call_type {
                         CallType::Fill => self.do_fill(&call),
-                        CallType::ConvexFill => self.do_convex_fill(&call),
+                        CallType::ConvexFill => {
+                            let paths = &self.paths[call.path_offset..call.path_offset + call.path_count];
+                            Self::do_convex_fill(self.ctx, paths, call, uniforms);
+                        },
                         CallType::Stroke => self.do_stroke(&call),
                         CallType::Triangles => {
                             // self.do_triangles(&call), WAS THIS
-                            let uniforms = &self.uniforms[call.uniform_offset];
                             Self::set_uniforms(self.ctx, uniforms, call.image);
 
                             // TODO: update self.indices and self.vertexes
                             self.bindings.vertex_buffers[0].update(self.ctx, &self.indices[..]);
                             self.bindings.index_buffer.update(self.ctx, &self.indices[..]);
 
+                            // TODO: draw
                             // glDrawArrays(
                             //     GL_TRIANGLES,
                             //     call.triangle_offset as i32,
