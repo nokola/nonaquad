@@ -1,9 +1,9 @@
+use glam::{Mat4, Vec4};
+use miniquad::graphics::Context as MiniContext;
+use miniquad::graphics::*;
 use nvg::renderer::*;
 use slab::Slab;
 use std::ffi::c_void;
-use miniquad::graphics::*;
-use miniquad::graphics::{ Context as MiniContext };
-use glam::{Vec4, Mat4};
 
 enum ShaderType {
     FillGradient,
@@ -95,7 +95,6 @@ mod shader {
         uniforms: UniformBlockLayout {
             uniforms: &[
                 UniformDesc::new("viewSize", UniformType::Float2),
-
                 UniformDesc::new("scissorMat", UniformType::Mat4),
                 UniformDesc::new("paintMat", UniformType::Mat4),
                 UniformDesc::new("innerCol", UniformType::Float4),
@@ -144,7 +143,11 @@ const MAX_INDICES: usize = u16::max_value() as usize;
 impl<'a> Renderer<'a> {
     pub fn create(ctx: &mut MiniContext) -> anyhow::Result<Renderer> {
         let shader = Shader::new(ctx, shader::VERTEX, shader::FRAGMENT, shader::META);
-        let pipeline = Pipeline::with_params(ctx, &[BufferLayout::default()], shader::ATTRIBUTES, shader,
+        let pipeline = Pipeline::with_params(
+            ctx,
+            &[BufferLayout::default()],
+            shader::ATTRIBUTES,
+            shader,
             PipelineParams {
                 depth_write: false,
                 color_blend: None, // set during draws
@@ -154,8 +157,16 @@ impl<'a> Renderer<'a> {
             },
         );
 
-        let vertex_buffer = Buffer::stream(ctx, BufferType::VertexBuffer, MAX_VERTICES * std::mem::size_of::<Vertex>());
-        let index_buffer = Buffer::stream(ctx, BufferType::IndexBuffer, MAX_INDICES * std::mem::size_of::<u16>());
+        let vertex_buffer = Buffer::stream(
+            ctx,
+            BufferType::VertexBuffer,
+            MAX_VERTICES * std::mem::size_of::<Vertex>(),
+        );
+        let index_buffer = Buffer::stream(
+            ctx,
+            BufferType::IndexBuffer,
+            MAX_INDICES * std::mem::size_of::<u16>(),
+        );
 
         let pixels: [u8; 4 * 4 * 4] = [
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,
@@ -165,7 +176,7 @@ impl<'a> Renderer<'a> {
             0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
         ];
         let temp_texture = miniquad::Texture::from_rgba8(ctx, 4, 4, &pixels);
-        
+
         let bindings = Bindings {
             vertex_buffers: vec![vertex_buffer],
             index_buffer,
@@ -247,7 +258,12 @@ impl<'a> Renderer<'a> {
         // glDisable(GL_STENCIL_TEST);
     }
 
-    unsafe fn do_convex_fill(ctx: &mut MiniContext, paths: &[GLPath], call: &Call, uniforms: &shader::FragUniforms) {
+    unsafe fn do_convex_fill(
+        ctx: &mut MiniContext,
+        paths: &[GLPath],
+        call: &Call,
+        uniforms: &shader::FragUniforms,
+    ) {
         Self::set_uniforms(ctx, uniforms, call.image);
         for path in paths {
             // glDrawArrays( // TODOKOLA: ADD support
@@ -255,7 +271,7 @@ impl<'a> Renderer<'a> {
             //     path.fill_offset as i32,
             //     path.fill_count as i32,
             // );
-        
+
             // if path.stroke_count > 0 { // TODOKOLA: ADD support
             //     glDrawArrays(
             //         GL_TRIANGLE_STRIP,
@@ -313,7 +329,9 @@ impl<'a> Renderer<'a> {
         Self::set_uniforms(self.ctx, &self.uniforms[call.uniform_offset], call.image);
 
         // TODO: update self.indices and self.vertexes
-        self.bindings.index_buffer.update(self.ctx, &self.indices[..])
+        self.bindings
+            .index_buffer
+            .update(self.ctx, &self.indices[..])
 
         // glDrawArrays(
         //     GL_TRIANGLES,
@@ -352,10 +370,14 @@ impl<'a> Renderer<'a> {
         } else {
             frag.scissor_mat = xform_to_4x4(scissor.xform.inverse());
             frag.scissor_ext = (scissor.extent.width, scissor.extent.height);
-            frag.scissor_scale = ((scissor.xform.0[0] * scissor.xform.0[0]
-                + scissor.xform.0[2] * scissor.xform.0[2]).sqrt() / fringe,
-                (scissor.xform.0[1] * scissor.xform.0[1]
-                + scissor.xform.0[3] * scissor.xform.0[3]).sqrt() / fringe);
+            frag.scissor_scale = (
+                (scissor.xform.0[0] * scissor.xform.0[0] + scissor.xform.0[2] * scissor.xform.0[2])
+                    .sqrt()
+                    / fringe,
+                (scissor.xform.0[1] * scissor.xform.0[1] + scissor.xform.0[3] * scissor.xform.0[3])
+                    .sqrt()
+                    / fringe,
+            );
         }
 
         frag.extent = (paint.extent.width, paint.extent.height);
@@ -383,7 +405,7 @@ impl<'a> Renderer<'a> {
                             1
                         }
                     }
-                    _ => { todo!("Unsupported texture type")},
+                    _ => todo!("Unsupported texture type"),
                 }
             }
         } else {
@@ -403,7 +425,7 @@ impl<'a> Renderer<'a> {
     }
 }
 
-trait IntoTuple4<T>{
+trait IntoTuple4<T> {
     fn into_tuple(self) -> (T, T, T, T);
 }
 
@@ -426,7 +448,8 @@ impl renderer::Renderer for Renderer<'_> {
         flags: ImageFlags,
         data: Option<&[u8]>,
     ) -> anyhow::Result<ImageId> {
-        let tex: miniquad::Texture = miniquad::Texture::new(self.ctx, 
+        let tex: miniquad::Texture = miniquad::Texture::new(
+            self.ctx,
             TextureAccess::Static,
             data,
             TextureParams {
@@ -442,14 +465,12 @@ impl renderer::Renderer for Renderer<'_> {
                 },
                 width: width as u32,
                 height: height as u32,
-            });
+            },
+        );
 
         // TODO: support ImageFlags::GENERATE_MIPMAPS) with/without if flags.contains(ImageFlags::NEAREST) {
 
-        let id = self.textures.insert(Texture {
-            tex,
-            flags,
-        });
+        let id = self.textures.insert(Texture { tex, flags });
         Ok(id)
     }
 
@@ -507,126 +528,128 @@ impl renderer::Renderer for Renderer<'_> {
             self.paths.clear();
             self.calls.clear();
             self.uniforms.clear();
-           
+
             return Ok(());
         }
-            unsafe {
-                self.ctx.begin_default_pass(PassAction::clear_color(0.5, 0.5, 1.0, 1.0));
+        unsafe {
+            self.ctx
+                .begin_default_pass(PassAction::clear_color(0.5, 0.5, 1.0, 1.0));
 
-                // glUseProgram(self.shader.prog); DONE
-                self.ctx.apply_pipeline(&self.pipeline);
-                self.ctx.apply_bindings(&self.bindings);
+            // glUseProgram(self.shader.prog); DONE
+            self.ctx.apply_pipeline(&self.pipeline);
+            self.ctx.apply_bindings(&self.bindings);
 
+            // glEnable(GL_CULL_FACE); // TODO: support in miniquad
+            // glCullFace(GL_BACK); // TODO: support in miniquad
+            // glFrontFace(GL_CCW); // DONE front_face_order
 
-                // glEnable(GL_CULL_FACE); // TODO: support in miniquad
-                // glCullFace(GL_BACK); // TODO: support in miniquad
-                // glFrontFace(GL_CCW); // DONE front_face_order
+            // glEnable(GL_BLEND); // TODO_BELOW
+            // glDisable(GL_DEPTH_TEST); DONE: depth_write: false, on PipelineParams
+            // glDisable(GL_SCISSOR_TEST); // TODO: support in miniquad
 
-                // glEnable(GL_BLEND); // TODO_BELOW
-                // glDisable(GL_DEPTH_TEST); DONE: depth_write: false, on PipelineParams
-                // glDisable(GL_SCISSOR_TEST); // TODO: support in miniquad
+            // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // DONE color_write
+            // glStencilMask(0xffffffff); // TODO: support in miniquad
+            // glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // TODO: support in miniquad
+            // glStencilFunc(GL_ALWAYS, 0, 0xffffffff); // TODO: support in miniquad
 
-                // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // DONE color_write
-                // glStencilMask(0xffffffff); // TODO: support in miniquad
-                // glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // TODO: support in miniquad
-                // glStencilFunc(GL_ALWAYS, 0, 0xffffffff); // TODO: support in miniquad
+            // glActiveTexture(GL_TEXTURE0); // TODO: implement
+            // glBindTexture(GL_TEXTURE_2D, 0); // TODO: implement
 
-                // glActiveTexture(GL_TEXTURE0); // TODO: implement
-                // glBindTexture(GL_TEXTURE_2D, 0); // TODO: implement
+            // TODOKOLA: commented:
+            // glBindVertexArray(self.vert_arr);
+            // glBindBuffer(GL_ARRAY_BUFFER, self.vert_buf);
+            // glBufferData(
+            //     GL_ARRAY_BUFFER,
+            //     (self.vertexes.len() * std::mem::size_of::<Vertex>()) as GLsizeiptr,
+            //     self.vertexes.as_ptr() as *const c_void,
+            //     GL_STREAM_DRAW,
+            // );
+            // glEnableVertexAttribArray(self.shader.loc_vertex);
+            // glEnableVertexAttribArray(self.shader.loc_tcoord);
+            // glVertexAttribPointer(
+            //     self.shader.loc_vertex,
+            //     2, // size in floats
+            //     GL_FLOAT,
+            //     GL_FALSE as GLboolean,
+            //     std::mem::size_of::<Vertex>() as i32,
+            //     std::ptr::null(),
+            // );
+            // glVertexAttribPointer(
+            //     self.shader.loc_tcoord,
+            //     2, // size in floats
+            //     GL_FLOAT,
+            //     GL_FALSE as GLboolean,
+            //     std::mem::size_of::<Vertex>() as i32,
+            //     (2 * std::mem::size_of::<f32>()) as *const c_void, // use GL_ARRAY_BUFFER, and skip x,y (2 floats) to start sampling at u, v
+            // );
+            // glUniform1i(self.shader.loc_tex, 0);
+            // glUniform2fv(
+            //     self.shader.loc_viewsize,
+            //     1,
+            //     &self.view as *const Extent as *const f32,
+            // );
 
-                // TODOKOLA: commented:
-                // glBindVertexArray(self.vert_arr);
-                // glBindBuffer(GL_ARRAY_BUFFER, self.vert_buf);
-                // glBufferData(
-                //     GL_ARRAY_BUFFER,
-                //     (self.vertexes.len() * std::mem::size_of::<Vertex>()) as GLsizeiptr,
-                //     self.vertexes.as_ptr() as *const c_void,
-                //     GL_STREAM_DRAW,
+            let calls = &self.calls[..];
+            for call in calls {
+                let blend = &call.blend_func;
+
+                self.ctx.set_blend(Some(blend.0));
+
+                // {
+                //     // TODO: set image in a better way!!!
+                //     self.bindings.images = vec![];
+                //     self.ctx.apply_bindings(&self.bindings);
+                // }
+
+                // glBlendFuncSeparate( // TODO: DELETE once tested
+                //     blend.src_rgb,
+                //     blend.dst_rgb,
+                //     blend.src_alpha,
+                //     blend.dst_alpha,
                 // );
-                // glEnableVertexAttribArray(self.shader.loc_vertex);
-                // glEnableVertexAttribArray(self.shader.loc_tcoord);
-                // glVertexAttribPointer(
-                //     self.shader.loc_vertex,
-                //     2, // size in floats
-                //     GL_FLOAT,
-                //     GL_FALSE as GLboolean,
-                //     std::mem::size_of::<Vertex>() as i32,
-                //     std::ptr::null(),
-                // );
-                // glVertexAttribPointer(
-                //     self.shader.loc_tcoord,
-                //     2, // size in floats
-                //     GL_FLOAT,
-                //     GL_FALSE as GLboolean,
-                //     std::mem::size_of::<Vertex>() as i32,
-                //     (2 * std::mem::size_of::<f32>()) as *const c_void, // use GL_ARRAY_BUFFER, and skip x,y (2 floats) to start sampling at u, v
-                // );
-                // glUniform1i(self.shader.loc_tex, 0);
-                // glUniform2fv(
-                //     self.shader.loc_viewsize,
-                //     1,
-                //     &self.view as *const Extent as *const f32,
-                // );
 
-                let calls = &self.calls[..];
-                for call in calls {
-                    let blend = &call.blend_func;
+                // println!("Call {:?}", call.call_type); // DEBUG
+                let uniforms = &self.uniforms[call.uniform_offset];
+                match call.call_type {
+                    CallType::Fill => self.do_fill(&call),
+                    CallType::ConvexFill => {
+                        let paths =
+                            &self.paths[call.path_offset..call.path_offset + call.path_count];
+                        Self::do_convex_fill(self.ctx, paths, call, uniforms);
+                    }
+                    CallType::Stroke => self.do_stroke(&call),
+                    CallType::Triangles => {
+                        // self.do_triangles(&call), WAS THIS
+                        Self::set_uniforms(self.ctx, uniforms, call.image);
 
-                    self.ctx.set_blend(Some(blend.0));
+                        // TODO: update self.indices and self.vertexes
+                        self.bindings.vertex_buffers[0].update(self.ctx, &self.indices[..]);
+                        self.bindings
+                            .index_buffer
+                            .update(self.ctx, &self.indices[..]);
 
-                    // {
-                    //     // TODO: set image in a better way!!!
-                    //     self.bindings.images = vec![];
-                    //     self.ctx.apply_bindings(&self.bindings);
-                    // }
-
-                    // glBlendFuncSeparate( // TODO: DELETE once tested
-                    //     blend.src_rgb,
-                    //     blend.dst_rgb,
-                    //     blend.src_alpha,
-                    //     blend.dst_alpha,
-                    // );
-
-                    // println!("Call {:?}", call.call_type); // DEBUG
-                    let uniforms = &self.uniforms[call.uniform_offset];
-                    match call.call_type {
-                        CallType::Fill => self.do_fill(&call),
-                        CallType::ConvexFill => {
-                            let paths = &self.paths[call.path_offset..call.path_offset + call.path_count];
-                            Self::do_convex_fill(self.ctx, paths, call, uniforms);
-                        },
-                        CallType::Stroke => self.do_stroke(&call),
-                        CallType::Triangles => {
-                            // self.do_triangles(&call), WAS THIS
-                            Self::set_uniforms(self.ctx, uniforms, call.image);
-
-                            // TODO: update self.indices and self.vertexes
-                            self.bindings.vertex_buffers[0].update(self.ctx, &self.indices[..]);
-                            self.bindings.index_buffer.update(self.ctx, &self.indices[..]);
-
-                            // TODO: draw
-                            // glDrawArrays(
-                            //     GL_TRIANGLES,
-                            //     call.triangle_offset as i32,
-                            //     call.triangle_count as i32,
-                            // );
-                    
-                        }
+                        // TODO: draw
+                        // glDrawArrays(
+                        //     GL_TRIANGLES,
+                        //     call.triangle_offset as i32,
+                        //     call.triangle_count as i32,
+                        // );
                     }
                 }
-
-                self.ctx.end_render_pass();
-                self.ctx.commit_frame();
-
-                // TODO: commented, not needed??
-                // glDisableVertexAttribArray(self.shader.loc_vertex);
-                // glDisableVertexAttribArray(self.shader.loc_tcoord);
-                // glBindVertexArray(0);
-                // glDisable(GL_CULL_FACE);
-                // glBindBuffer(GL_ARRAY_BUFFER, 0);
-                // glUseProgram(0);
-                // glBindTexture(GL_TEXTURE_2D, 0);
             }
+
+            self.ctx.end_render_pass();
+            self.ctx.commit_frame();
+
+            // TODO: commented, not needed??
+            // glDisableVertexAttribArray(self.shader.loc_vertex);
+            // glDisableVertexAttribArray(self.shader.loc_tcoord);
+            // glBindVertexArray(0);
+            // glDisable(GL_CULL_FACE);
+            // glBindBuffer(GL_ARRAY_BUFFER, 0);
+            // glUseProgram(0);
+            // glBindTexture(GL_TEXTURE_2D, 0);
+        }
 
         self.vertexes.clear();
         self.paths.clear();
@@ -801,14 +824,22 @@ fn convert_blend_factor(factor: nvg::BlendFactor) -> miniquad::BlendFactor {
         nvg::BlendFactor::One => miniquad::BlendFactor::One,
 
         nvg::BlendFactor::SrcColor => miniquad::BlendFactor::Value(BlendValue::SourceColor),
-        nvg::BlendFactor::OneMinusSrcColor => miniquad::BlendFactor::OneMinusValue(BlendValue::SourceColor),
+        nvg::BlendFactor::OneMinusSrcColor => {
+            miniquad::BlendFactor::OneMinusValue(BlendValue::SourceColor)
+        }
         nvg::BlendFactor::DstColor => miniquad::BlendFactor::Value(BlendValue::DestinationColor),
-        nvg::BlendFactor::OneMinusDstColor => miniquad::BlendFactor::OneMinusValue(BlendValue::DestinationColor),
+        nvg::BlendFactor::OneMinusDstColor => {
+            miniquad::BlendFactor::OneMinusValue(BlendValue::DestinationColor)
+        }
 
         nvg::BlendFactor::SrcAlpha => miniquad::BlendFactor::Value(BlendValue::SourceAlpha),
-        nvg::BlendFactor::OneMinusSrcAlpha => miniquad::BlendFactor::OneMinusValue(BlendValue::SourceAlpha),
+        nvg::BlendFactor::OneMinusSrcAlpha => {
+            miniquad::BlendFactor::OneMinusValue(BlendValue::SourceAlpha)
+        }
         nvg::BlendFactor::DstAlpha => miniquad::BlendFactor::Value(BlendValue::DestinationAlpha),
-        nvg::BlendFactor::OneMinusDstAlpha => miniquad::BlendFactor::OneMinusValue(BlendValue::DestinationAlpha),
+        nvg::BlendFactor::OneMinusDstAlpha => {
+            miniquad::BlendFactor::OneMinusValue(BlendValue::DestinationAlpha)
+        }
 
         nvg::BlendFactor::SrcAlphaSaturate => miniquad::BlendFactor::SourceAlphaSaturate,
     }
@@ -825,7 +856,8 @@ fn premul_color(color: Color) -> Color {
 }
 
 #[inline]
-fn xform_to_3x4(xform: Transform) -> [f32; 12] { // 3 col 4 rows
+fn xform_to_3x4(xform: Transform) -> [f32; 12] {
+    // 3 col 4 rows
     let mut m = [0f32; 12];
     let t = &xform.0;
     m[0] = t[0];
@@ -848,10 +880,9 @@ fn xform_to_4x4(xform: Transform) -> Mat4 {
     let t = &xform.0;
 
     Mat4::from_cols(
-        Vec4::new(t[0], t[2], t[4], 0.0), 
+        Vec4::new(t[0], t[2], t[4], 0.0),
         Vec4::new(t[1], t[3], t[5], 0.0),
         Vec4::new(0.0, 0.0, 1.0, 0.0),
-        Vec4::new(0.0, 0.0, 0.0, 0.0)
+        Vec4::new(0.0, 0.0, 0.0, 0.0),
     )
 }
-
