@@ -8,11 +8,13 @@ edition = '2018'
 nvg = "0.5.9"
 slab = "0.4.2"
 anyhow = "1.0.26"
+glam = {version = "0.8", features = ["scalar-math"] }
+color-backtrace = { version = "0.3" }
 
 [dependencies.miniquad]
-#path = '..\miniquad-nokola'
-git = "https://github.com/nokola/miniquad"
-rev = "b980915c62337bf60afbe8708569977adb4c0d74"
+path = '..\miniquad-nokola'
+# git = "https://github.com/nokola/miniquad"
+# rev = "b980915c62337bf60afbe8708569977adb4c0d74"
 
 # Uncomment for small builds
 [profile.release]
