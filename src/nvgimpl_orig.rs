@@ -222,7 +222,7 @@ impl Drop for Renderer {
 }
 
 impl Renderer {
-    pub fn create() -> anyhow::Result<Renderer> {
+    pub fn create(_ctx: &mut miniquad::Context) -> anyhow::Result<Renderer> {
         unsafe {
             let shader = Shader::load()?;
 
