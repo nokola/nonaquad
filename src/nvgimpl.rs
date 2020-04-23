@@ -76,7 +76,7 @@ pub struct Renderer<'a> {
     paths: Vec<GLPath>,
     vertexes: Vec<Vertex>,
     indices: Vec<u16>,
-    uniforms: Vec<shader::FragUniforms>,
+    uniforms: Vec<shader::Uniforms>,
     ctx: &'a mut MiniContext,
 }
 
@@ -112,15 +112,10 @@ mod shader {
         },
     };
 
+    #[derive(Default)]
     #[repr(C)]
     pub struct Uniforms {
         pub view_size: (f32, f32),
-        pub frag: FragUniforms,
-    }
-
-    #[derive(Default)]
-    #[repr(C)]
-    pub struct FragUniforms {
         pub scissor_mat: glam::Mat4,
         pub paint_mat: glam::Mat4,
         pub inner_col: (f32, f32, f32, f32),
@@ -197,7 +192,7 @@ impl<'a> Renderer<'a> {
         })
     }
 
-    fn set_uniforms(ctx: &mut MiniContext, uniforms: &shader::FragUniforms, img: Option<usize>) {
+    fn set_uniforms(ctx: &mut MiniContext, uniforms: &shader::Uniforms, img: Option<usize>) {
         ctx.apply_uniforms(uniforms);
 
         // TODOKOLA: ADD support, see //     // TODO: set image in a better way!!! in flush()
@@ -262,10 +257,16 @@ impl<'a> Renderer<'a> {
         ctx: &mut MiniContext,
         paths: &[GLPath],
         call: &Call,
-        uniforms: &shader::FragUniforms,
+        uniforms: &shader::Uniforms,
+        bindings: &Bindings,
+        vertices: &[Vertex],
     ) {
         Self::set_uniforms(ctx, uniforms, call.image);
+        bindings.vertex_buffers[0].update(ctx, &vertices);
+        ctx.apply_bindings(bindings);
+
         for path in paths {
+            ctx.draw(path.fill_offset as i32, path.fill_count as i32, 1);
             // glDrawArrays( // TODOKOLA: ADD support
             //     GL_TRIANGLE_FAN,
             //     path.fill_offset as i32,
@@ -347,8 +348,9 @@ impl<'a> Renderer<'a> {
         width: f32,
         fringe: f32,
         stroke_thr: f32,
-    ) -> shader::FragUniforms {
-        let mut frag = shader::FragUniforms {
+    ) -> shader::Uniforms {
+        let mut frag = shader::Uniforms {
+            view_size: Default::default(),
             scissor_mat: Default::default(),
             paint_mat: Default::default(),
             inner_col: premul_color(paint.inner_color).into_tuple(),
@@ -420,7 +422,7 @@ impl<'a> Renderer<'a> {
         frag
     }
 
-    fn append_uniforms(&mut self, uniforms: shader::FragUniforms) {
+    fn append_uniforms(&mut self, uniforms: shader::Uniforms) {
         self.uniforms.push(uniforms);
     }
 }
@@ -609,13 +611,13 @@ impl renderer::Renderer for Renderer<'_> {
                 // );
 
                 // println!("Call {:?}", call.call_type); // DEBUG
-                let uniforms = &self.uniforms[call.uniform_offset];
+                let uniforms = &mut self.uniforms[call.uniform_offset];
                 match call.call_type {
                     CallType::Fill => self.do_fill(&call),
                     CallType::ConvexFill => {
                         let paths =
                             &self.paths[call.path_offset..call.path_offset + call.path_count];
-                        Self::do_convex_fill(self.ctx, paths, call, uniforms);
+                        Self::do_convex_fill(self.ctx, paths, call, uniforms, &self.bindings, &self.vertexes);
                     }
                     CallType::Stroke => self.do_stroke(&call),
                     CallType::Triangles => {
@@ -722,10 +724,10 @@ impl renderer::Renderer for Renderer<'_> {
                 .push(Vertex::new(bounds.min.x, bounds.min.y, 0.5, 1.0));
 
             call.uniform_offset = self.uniforms.len();
-            self.append_uniforms(shader::FragUniforms {
+            self.append_uniforms(shader::Uniforms {
                 stroke_thr: -1.0,
                 type_: ShaderType::Simple as i32,
-                ..shader::FragUniforms::default()
+                ..shader::Uniforms::default()
             });
             self.append_uniforms(self.convert_paint(paint, scissor, fringe, fringe, -1.0));
         } else {
