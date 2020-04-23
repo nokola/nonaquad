@@ -534,8 +534,11 @@ impl renderer::Renderer for Renderer<'_> {
             return Ok(());
         }
         unsafe {
-            self.ctx
-                .begin_default_pass(PassAction::clear_color(0.5, 0.5, 1.0, 1.0));
+            self.ctx.begin_default_pass(PassAction::Clear {
+                color: Some((0.5, 0.5, 1.0, 1.0)),
+                depth: None,
+                stencil: None,
+            });
 
             // glUseProgram(self.shader.prog); DONE
             self.ctx.apply_pipeline(&self.pipeline);
@@ -617,7 +620,14 @@ impl renderer::Renderer for Renderer<'_> {
                     CallType::ConvexFill => {
                         let paths =
                             &self.paths[call.path_offset..call.path_offset + call.path_count];
-                        Self::do_convex_fill(self.ctx, paths, call, uniforms, &self.bindings, &self.vertexes);
+                        Self::do_convex_fill(
+                            self.ctx,
+                            paths,
+                            call,
+                            uniforms,
+                            &self.bindings,
+                            &self.vertexes,
+                        );
                     }
                     CallType::Stroke => self.do_stroke(&call),
                     CallType::Triangles => {
