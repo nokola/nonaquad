@@ -255,31 +255,53 @@ impl<'a> Renderer<'a> {
     unsafe fn do_convex_fill(
         ctx: &mut MiniContext,
         paths: &[GLPath],
-        call: &Call,
-        uniforms: &shader::Uniforms,
         bindings: &Bindings,
         vertices: &[Vertex],
+        indices: &mut Vec<u16>,
     ) {
-        Self::set_uniforms(ctx, uniforms, call.image);
-        bindings.vertex_buffers[0].update(ctx, &vertices);
-        ctx.apply_bindings(bindings);
-
+        // convert all fans and strips into single draw call
+        // more info: https://gamedev.stackexchange.com/questions/133208/difference-in-gldrawarrays-and-gldrawelements
+        // from https://www.khronos.org/opengl/wiki/Primitive:
+        //
+        // GL_TRIANGLES:
+        // Indices:     0 1 2 3 4 5 ...
+        // Triangles:  {0 1 2}
+        //                   {3 4 5}
+        //
+        // GL_TRIANGLE_STRIP:
+        // Indices:     0 1 2 3 4 5 ...
+        // Triangles:  {0 1 2}
+        //               {1 2 3}  drawing order is (2 1 3) to maintain proper winding
+        //                 {2 3 4}
+        //                   {3 4 5}  drawing order is (4 3 5) to maintain proper winding
+        //
+        // GL_TRIANGLE_FAN:
+        // Indices:     0 1 2 3 4 5 ... (6 total indicex)
+        // Triangles:  {0 1 2}
+        //             {0} {2 3}
+        //             {0}   {3 4}
+        //             {0}     {4 5}    (4 total triangles)
+        indices.clear();
         for path in paths {
-            ctx.draw(path.fill_offset as i32, path.fill_count as i32, 1);
-            // glDrawArrays( // TODOKOLA: ADD support
-            //     GL_TRIANGLE_FAN,
-            //     path.fill_offset as i32,
-            //     path.fill_count as i32,
-            // );
+            // draw TRIANGLE_FAN from path.fill_offset with path.fill_count, same as
+            // glDrawArrays(GL_TRIANGLE_FAN, path.fill_offset, path.fill_count); // note: count is "number of indices to render"
+            let start_index = path.fill_offset;
+            for i in path.fill_offset..path.fill_offset + path.fill_count - 2 {
+                indices.push(start_index as u16);
+                indices.push((i + 1) as u16);
+                indices.push((i + 2) as u16);
+            }
 
-            // if path.stroke_count > 0 { // TODOKOLA: ADD support
-            //     glDrawArrays(
-            //         GL_TRIANGLE_STRIP,
-            //         path.stroke_offset as i32,
-            //         path.stroke_count as i32,
-            //     );
-            // }
+            if path.stroke_count > 0 {
+                // draw TRIANGLE_STRIP from path.stroke_offset with path.stroke_count, same as
+                // glDrawArrays(GL_TRIANGLE_STRIP,path.stroke_offset, path.stroke_count);
+            }
         }
+
+        bindings.vertex_buffers[0].update(ctx, &vertices);
+        bindings.index_buffer.update(ctx, &indices);
+        ctx.apply_bindings(bindings);
+        ctx.draw(0, indices.len() as i32, 1);
     }
 
     unsafe fn do_stroke(&self, call: &Call) {
@@ -616,7 +638,7 @@ impl renderer::Renderer for Renderer<'_> {
                 // println!("Call {:?}", call.call_type); // DEBUG
                 let uniforms: &mut shader::Uniforms = &mut self.uniforms[call.uniform_offset];
                 uniforms.view_size = self.ctx.screen_size(); // screen_size() is actually view size
-                
+
                 match call.call_type {
                     CallType::Fill => self.do_fill(&call),
                     CallType::ConvexFill => {
@@ -638,18 +660,19 @@ impl renderer::Renderer for Renderer<'_> {
 
                         // self.ctx.apply_bindings(&self.bindings);
                         // Self::set_uniforms(self.ctx, uniforms, call.image);
-                    
+
                         // self.ctx.draw(0, 3, 1);
-                    
+
+                        Self::set_uniforms(self.ctx, uniforms, call.image);
                         let paths =
                             &self.paths[call.path_offset..call.path_offset + call.path_count];
+
                         Self::do_convex_fill(
                             self.ctx,
                             paths,
-                            call,
-                            uniforms,
                             &self.bindings,
                             &self.vertexes,
+                            &mut self.indices,
                         );
                     }
                     CallType::Stroke => self.do_stroke(&call),
