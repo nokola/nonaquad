@@ -617,6 +617,27 @@ impl renderer::Renderer for Renderer<'_> {
                 match call.call_type {
                     CallType::Fill => self.do_fill(&call),
                     CallType::ConvexFill => {
+                        // test data:
+                        // let val = 0.0;
+                        // #[rustfmt::skip]
+                        // let vertices: [Vertex; 4] = [
+                        //     Vertex { x: 100.0, y: 100.0, u: 0., v: 0. },
+                        //     Vertex { x: 150.0, y: 50.0, u: 1., v: 0. },
+                        //     Vertex { x: 100.0, y: 50.0, u: 1., v: 1. },
+                        //     Vertex { x: -0.5 + val, y:  0.5 + val, u: 0., v: 1. },
+                        // ];
+                        // let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
+                    
+                        // self.bindings.vertex_buffers[0].update(self.ctx, &vertices);
+                        // self.bindings
+                        //     .index_buffer
+                        //     .update(self.ctx, &indices);
+
+                        // self.ctx.apply_bindings(&self.bindings);
+                        // Self::set_uniforms(self.ctx, uniforms, call.image);
+                    
+                        // self.ctx.draw(0, 3, 1);
+                    
                         let paths =
                             &self.paths[call.path_offset..call.path_offset + call.path_count];
                         Self::do_convex_fill(
