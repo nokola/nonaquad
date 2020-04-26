@@ -199,7 +199,7 @@ struct FragUniforms {
     type_: i32,
 }
 
-pub struct Renderer {
+pub struct Renderer<'a> {
     shader: Shader,
     textures: Slab<Texture>,
     view: Extent,
@@ -209,9 +209,10 @@ pub struct Renderer {
     paths: Vec<GLPath>,
     vertexes: Vec<Vertex>,
     uniforms: Vec<FragUniforms>,
+    phantom: std::marker::PhantomData<&'a i32>,
 }
 
-impl Drop for Renderer {
+impl Drop for Renderer<'_> {
     fn drop(&mut self) {
         unsafe {
             // glDeleteBuffers(1, &self.frag_buf); TODOKOLA
@@ -221,7 +222,7 @@ impl Drop for Renderer {
     }
 }
 
-impl Renderer {
+impl Renderer<'_> {
     pub fn create(_ctx: &mut miniquad::Context) -> anyhow::Result<Renderer> {
         unsafe {
             let shader = Shader::load()?;
@@ -254,6 +255,7 @@ impl Renderer {
                 paths: Default::default(),
                 vertexes: Default::default(),
                 uniforms: Default::default(),
+                phantom: std::marker::PhantomData,
             })
         }
     }
@@ -507,7 +509,7 @@ impl Renderer {
     }
 }
 
-impl renderer::Renderer for Renderer {
+impl renderer::Renderer for Renderer<'_> {
     fn edge_antialias(&self) -> bool {
         true
     }
