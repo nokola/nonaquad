@@ -891,10 +891,17 @@ fn xform_to_3x4(xform: Transform) -> [f32; 12] {
 fn xform_to_4x4(xform: Transform) -> Mat4 {
     let t = &xform.0;
 
+    // Mat4::from_cols(
+    //     Vec4::new(t[0], t[2], t[4], 0.0),
+    //     Vec4::new(t[1], t[3], t[5], 0.0),
+    //     Vec4::new(0.0, 0.0, 1.0, 0.0),
+    //     Vec4::new(0.0, 0.0, 0.0, 0.0),
+    // )
+
     Mat4::from_cols(
-        Vec4::new(t[0], t[2], t[4], 0.0),
-        Vec4::new(t[1], t[3], t[5], 0.0),
-        Vec4::new(0.0, 0.0, 1.0, 0.0),
+        Vec4::new(t[0], t[1], 0.0, 0.0),
+        Vec4::new(t[2], t[3], 0.0, 0.0),
+        Vec4::new(t[4], t[5], 1.0, 0.0),
         Vec4::new(0.0, 0.0, 0.0, 0.0),
     )
 }
