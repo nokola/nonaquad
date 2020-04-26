@@ -613,7 +613,9 @@ impl renderer::Renderer for Renderer<'_> {
                 // );
 
                 // println!("Call {:?}", call.call_type); // DEBUG
-                let uniforms = &mut self.uniforms[call.uniform_offset];
+                let uniforms: &mut shader::Uniforms = &mut self.uniforms[call.uniform_offset];
+                uniforms.view_size = self.ctx.screen_size(); // screen_size() is actually view size
+                
                 match call.call_type {
                     CallType::Fill => self.do_fill(&call),
                     CallType::ConvexFill => {
@@ -627,7 +629,7 @@ impl renderer::Renderer for Renderer<'_> {
                         //     Vertex { x: -0.5 + val, y:  0.5 + val, u: 0., v: 1. },
                         // ];
                         // let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
-                    
+
                         // self.bindings.vertex_buffers[0].update(self.ctx, &vertices);
                         // self.bindings
                         //     .index_buffer
