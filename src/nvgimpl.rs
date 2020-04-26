@@ -3,7 +3,6 @@ use miniquad::graphics::Context as MiniContext;
 use miniquad::graphics::*;
 use nvg::renderer::*;
 use slab::Slab;
-use std::ffi::c_void;
 
 enum ShaderType {
     FillGradient,
