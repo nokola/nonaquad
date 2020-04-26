@@ -351,7 +351,7 @@ impl<'a> Renderer<'a> {
     ) -> shader::Uniforms {
         let mut frag = shader::Uniforms {
             view_size: Default::default(),
-            scissor_mat: Default::default(),
+            scissor_mat: glam::Mat4::zero(),
             paint_mat: Default::default(),
             inner_col: premul_color(paint.inner_color).into_tuple(),
             outer_col: premul_color(paint.outer_color).into_tuple(),
