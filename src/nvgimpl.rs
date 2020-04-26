@@ -595,6 +595,7 @@ impl renderer::Renderer for Renderer<'_> {
 
             let calls = &self.calls[..];
             for call in calls {
+                let call: &Call = call; // added to make rust-analyzer type inferrence work. See https://github.com/rust-analyzer/rust-analyzer/issues/4160
                 let blend = &call.blend_func;
 
                 self.ctx.set_blend(Some(blend.0));
