@@ -204,52 +204,64 @@ impl<'a> Renderer<'a> {
         // }
     }
 
-    unsafe fn do_fill(&self, call: &Call) {
-        // TODOKOLA: ADD support
-        // let paths = &self.paths[call.path_offset..call.path_offset + call.path_count];
+    fn do_fill(
+        ctx: &mut MiniContext,
+        call: &Call,
+        paths: &[GLPath],
+        bindings: &Bindings,
+        indices: &mut Vec<u16>,
+        uniforms: &shader::Uniforms,
+        uniforms_next: &shader::Uniforms,
+    ) {
+        indices.clear();
+        // TODO: test!!!
 
-        // glEnable(GL_STENCIL_TEST);
-        // glStencilMask(0xff);
-        // glStencilFunc(GL_ALWAYS, 0, 0xff);
-        // glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-
+        // TODO glEnable(GL_STENCIL_TEST);
+        // TODO glStencilMask(0xff);
+        // TODO glStencilFunc(GL_ALWAYS, 0, 0xff);
+        // TODO glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         // self.set_uniforms(call.uniform_offset, call.image);
+        Self::set_uniforms(ctx, uniforms, call.image);
+        // TODO glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+        // TODO glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+        // TODO glDisable(GL_CULL_FACE);
+        for path in paths {
+            // glDrawArrays(GL_TRIANGLE_FAN, path.fill_offset as i32, path.fill_count as i32);
+            Self::add_triangle_fan(indices, path.fill_offset as u16, path.fill_count as u16);
+        }
+        // TODO glEnable(GL_CULL_FACE);
+        // TODO glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        bindings.index_buffer.update(ctx, &indices);
+        ctx.apply_bindings(bindings);
+        ctx.draw(0, indices.len() as i32, 1);
 
-        // // glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
-        // // glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
-        // glDisable(GL_CULL_FACE);
-        // for path in paths {
-        //     glDrawArrays(
-        //         GL_TRIANGLE_FAN,
-        //         path.fill_offset as i32,
-        //         path.fill_count as i32,
-        //     );
-        // }
-        // glEnable(GL_CULL_FACE);
-
-        // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
+        indices.clear();
         // self.set_uniforms(call.uniform_offset + 1, call.image);
+        Self::set_uniforms(ctx, uniforms_next, call.image);
+        // TODO glStencilFunc(GL_EQUAL, 0x00, 0xff);
+        // TODO glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        for path in paths {
+            // glDrawArrays(GL_TRIANGLE_STRIP, path.stroke_offset as i32, path.stroke_count as i32);
+            Self::add_triangle_strip(indices, path.stroke_offset as u16, path.stroke_count as u16);
+        }
+        bindings.index_buffer.update(ctx, &indices);
+        ctx.apply_bindings(bindings);
+        ctx.draw(0, indices.len() as i32, 1);
 
-        // glStencilFunc(GL_EQUAL, 0x00, 0xff);
-        // glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        // for path in paths {
-        //     glDrawArrays(
-        //         GL_TRIANGLE_STRIP,
-        //         path.stroke_offset as i32,
-        //         path.stroke_count as i32,
-        //     );
-        // }
+        indices.clear();
+        // TODO glStencilFunc(GL_NOTEQUAL, 0x00, 0xff);
+        // TODO glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
+        // glDrawArrays(GL_TRIANGLE_STRIP, call.triangle_offset as i32, call.triangle_count as i32);
+        Self::add_triangle_strip(
+            indices,
+            call.triangle_offset as u16,
+            call.triangle_count as u16,
+        );
+        bindings.index_buffer.update(ctx, &indices);
+        ctx.apply_bindings(bindings);
+        ctx.draw(0, indices.len() as i32, 1);
 
-        // glStencilFunc(GL_NOTEQUAL, 0x00, 0xff);
-        // glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-        // glDrawArrays(
-        //     GL_TRIANGLE_STRIP,
-        //     call.triangle_offset as i32,
-        //     call.triangle_count as i32,
-        // );
-
-        // glDisable(GL_STENCIL_TEST);
+        // TODO glDisable(GL_STENCIL_TEST);
     }
 
     // from https://www.khronos.org/opengl/wiki/Primitive:
@@ -703,7 +715,23 @@ impl renderer::Renderer for Renderer<'_> {
                 let uniforms: &shader::Uniforms = &self.uniforms[call.uniform_offset];
 
                 match call.call_type {
-                    CallType::Fill => self.do_fill(&call),
+                    CallType::Fill => { // TODO: test!
+                        let paths =
+                            &self.paths[call.path_offset..call.path_offset + call.path_count];
+
+                        let uniforms_next: &shader::Uniforms =
+                            &self.uniforms[call.uniform_offset + 1];
+
+                        Self::do_fill(
+                            self.ctx,
+                            call,
+                            paths,
+                            &self.bindings,
+                            &mut self.indices,
+                            &uniforms,
+                            &uniforms_next,
+                        );
+                    }
                     CallType::ConvexFill => {
                         // test data:
                         // let val = 0.0;
