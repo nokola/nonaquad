@@ -407,8 +407,12 @@ impl<'a> Renderer<'a> {
         Self::set_uniforms(ctx, uniforms, call.image);
 
         // draw TRIANGLES from call.triangle_offset with call.triangle_count, same as
-        // glDrawArrays(GL_TRIANGLES, call.triangle_offset as i32, call.triangle_count as i32); // note: triangle_count is "number of indices to render", not number of triangles 
-        Self::add_triangles(indices, call.triangle_offset as u16, call.triangle_count as u16);
+        // glDrawArrays(GL_TRIANGLES, call.triangle_offset as i32, call.triangle_count as i32); // note: triangle_count is "number of indices to render", not number of triangles
+        Self::add_triangles(
+            indices,
+            call.triangle_offset as u16,
+            call.triangle_count as u16,
+        );
 
         bindings.index_buffer.update(ctx, &indices);
         ctx.apply_bindings(bindings);
