@@ -276,6 +276,22 @@ impl<'a> Renderer<'a> {
     }
 
     // from https://www.khronos.org/opengl/wiki/Primitive:
+    // GL_TRIANGLES:
+    // Indices:     0 1 2 3 4 5 ... (6 total indices)
+    // Triangles:  {0 1 2}
+    //                   {3 4 5}    (2 total indices)
+    /// Adds indices to draw GL_TRIANGLES
+    #[inline]
+    fn add_triangles(indices: &mut Vec<u16>, first_vertex_index: u16, index_count: u16) {
+        // TODO: test!
+        for i in (first_vertex_index..first_vertex_index + index_count).step_by(3) {
+            indices.push(i);
+            indices.push(i + 1);
+            indices.push(i + 2);
+        }
+    }
+
+    // from https://www.khronos.org/opengl/wiki/Primitive:
     // GL_TRIANGLE_STRIP:
     // Indices:     0 1 2 3 4 5 ... (6 total indices)
     // Triangles:  {0 1 2}
@@ -306,14 +322,18 @@ impl<'a> Renderer<'a> {
 
     fn do_convex_fill(
         ctx: &mut MiniContext,
+        call: &Call,
         paths: &[GLPath],
         bindings: &Bindings,
         vertices: &[Vertex],
         indices: &mut Vec<u16>,
+        uniforms: &shader::Uniforms,
     ) {
+        indices.clear();
+        Self::set_uniforms(ctx, uniforms, call.image);
+
         // convert all fans and strips into single draw call
         // more info: https://gamedev.stackexchange.com/questions/133208/difference-in-gldrawarrays-and-gldrawelements
-        indices.clear();
         for path in paths {
             // draw TRIANGLE_FAN from path.fill_offset with path.fill_count, same as
             // glDrawArrays(GL_TRIANGLE_FAN, path.fill_offset, path.fill_count); // note: count is "number of indices to render"
@@ -343,7 +363,8 @@ impl<'a> Renderer<'a> {
         bindings: &Bindings,
         vertices: &[Vertex],
         indices: &mut Vec<u16>,
-        uniforms: &[shader::Uniforms],
+        uniforms: &shader::Uniforms,
+        uniforms_next: &shader::Uniforms,
     ) {
         indices.clear();
 
@@ -354,7 +375,7 @@ impl<'a> Renderer<'a> {
         // TODO glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 
         // self.set_uniforms(call.uniform_offset + 1, call.image);
-        Self::set_uniforms(ctx, &uniforms[call.uniform_offset + 1], call.image);
+        Self::set_uniforms(ctx, uniforms_next, call.image);
         for path in paths {
             // glDrawArrays(GL_TRIANGLE_STRIP, path.stroke_offset as i32, path.stroke_count as i32);
             Self::add_triangle_strip(indices, path.stroke_offset as u16, path.stroke_count as u16);
@@ -365,7 +386,7 @@ impl<'a> Renderer<'a> {
         ctx.draw(0, indices.len() as i32, 1);
 
         // self.set_uniforms(call.uniform_offset, call.image);
-        Self::set_uniforms(ctx, &uniforms[call.uniform_offset], call.image);
+        Self::set_uniforms(ctx, uniforms, call.image);
         // TODO glStencilFunc(GL_EQUAL, 0x0, 0xff);
         // TODO glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
         ctx.draw(0, indices.len() as i32, 1);
@@ -379,19 +400,25 @@ impl<'a> Renderer<'a> {
         // TODO glDisable(GL_STENCIL_TEST);
     }
 
-    unsafe fn do_triangles(&mut self, call: &Call) {
-        Self::set_uniforms(self.ctx, &self.uniforms[call.uniform_offset], call.image);
+    fn do_triangles(
+        ctx: &mut MiniContext,
+        call: &Call,
+        bindings: &Bindings,
+        vertices: &[Vertex],
+        indices: &mut Vec<u16>,
+        uniforms: &shader::Uniforms,
+    ) {
+        indices.clear();
+        Self::set_uniforms(ctx, uniforms, call.image);
 
-        // TODO: update self.indices and self.vertexes
-        self.bindings
-            .index_buffer
-            .update(self.ctx, &self.indices[..])
+        // draw TRIANGLES from call.triangle_offset with call.triangle_count, same as
+        // glDrawArrays(GL_TRIANGLES, call.triangle_offset as i32, call.triangle_count as i32); // note: triangle_count is "number of indices to render", not number of triangles 
+        Self::add_triangles(indices, call.triangle_offset as u16, call.triangle_count as u16);
 
-        // glDrawArrays(
-        //     GL_TRIANGLES,
-        //     call.triangle_offset as i32,
-        //     call.triangle_count as i32,
-        // );
+        bindings.vertex_buffers[0].update(ctx, &vertices);
+        bindings.index_buffer.update(ctx, &indices);
+        ctx.apply_bindings(bindings);
+        ctx.draw(0, indices.len() as i32, 1);
     }
 
     fn convert_paint(
@@ -668,8 +695,13 @@ impl renderer::Renderer for Renderer<'_> {
                 // );
 
                 // println!("Call {:?}", call.call_type); // DEBUG
-                let uniforms: &mut shader::Uniforms = &mut self.uniforms[call.uniform_offset];
-                uniforms.view_size = self.ctx.screen_size(); // screen_size() is actually view size
+
+                // update view size for the uniforms that may be in use
+                self.uniforms[call.uniform_offset].view_size = self.ctx.screen_size();
+                if self.uniforms.len() > call.uniform_offset + 1 {
+                    self.uniforms[call.uniform_offset + 1].view_size = self.ctx.screen_size();
+                }
+                let uniforms: &shader::Uniforms = &self.uniforms[call.uniform_offset];
 
                 match call.call_type {
                     CallType::Fill => self.do_fill(&call),
@@ -695,21 +727,24 @@ impl renderer::Renderer for Renderer<'_> {
 
                         // self.ctx.draw(0, 3, 1);
 
-                        Self::set_uniforms(self.ctx, uniforms, call.image);
                         let paths =
                             &self.paths[call.path_offset..call.path_offset + call.path_count];
 
                         Self::do_convex_fill(
                             self.ctx,
+                            call,
                             paths,
                             &self.bindings,
                             &self.vertexes,
                             &mut self.indices,
+                            uniforms,
                         );
                     }
                     CallType::Stroke => {
                         let paths =
                             &self.paths[call.path_offset..call.path_offset + call.path_count];
+                        let uniforms_next: &shader::Uniforms =
+                            &self.uniforms[call.uniform_offset + 1];
 
                         Self::do_stroke(
                             self.ctx,
@@ -718,26 +753,19 @@ impl renderer::Renderer for Renderer<'_> {
                             &self.bindings,
                             &self.vertexes,
                             &mut self.indices,
-                            &self.uniforms,
+                            &uniforms,
+                            &uniforms_next,
                         );
-                        // self.do_stroke(&call),
                     }
                     CallType::Triangles => {
-                        // self.do_triangles(&call), WAS THIS
-                        Self::set_uniforms(self.ctx, uniforms, call.image);
-
-                        // TODO: update self.indices and self.vertexes
-                        self.bindings.vertex_buffers[0].update(self.ctx, &self.indices[..]);
-                        self.bindings
-                            .index_buffer
-                            .update(self.ctx, &self.indices[..]);
-
-                        // TODO: draw
-                        // glDrawArrays(
-                        //     GL_TRIANGLES,
-                        //     call.triangle_offset as i32,
-                        //     call.triangle_count as i32,
-                        // );
+                        Self::do_triangles(
+                            self.ctx,
+                            call,
+                            &self.bindings,
+                            &self.vertexes,
+                            &mut self.indices,
+                            uniforms,
+                        );
                     }
                 }
             }
