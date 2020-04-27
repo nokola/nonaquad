@@ -325,7 +325,6 @@ impl<'a> Renderer<'a> {
         call: &Call,
         paths: &[GLPath],
         bindings: &Bindings,
-        vertices: &[Vertex],
         indices: &mut Vec<u16>,
         uniforms: &shader::Uniforms,
     ) {
@@ -350,7 +349,6 @@ impl<'a> Renderer<'a> {
             }
         }
 
-        bindings.vertex_buffers[0].update(ctx, &vertices);
         bindings.index_buffer.update(ctx, &indices);
         ctx.apply_bindings(bindings);
         ctx.draw(0, indices.len() as i32, 1);
@@ -361,7 +359,6 @@ impl<'a> Renderer<'a> {
         call: &Call,
         paths: &[GLPath],
         bindings: &Bindings,
-        vertices: &[Vertex],
         indices: &mut Vec<u16>,
         uniforms: &shader::Uniforms,
         uniforms_next: &shader::Uniforms,
@@ -380,7 +377,6 @@ impl<'a> Renderer<'a> {
             // glDrawArrays(GL_TRIANGLE_STRIP, path.stroke_offset as i32, path.stroke_count as i32);
             Self::add_triangle_strip(indices, path.stroke_offset as u16, path.stroke_count as u16);
         }
-        bindings.vertex_buffers[0].update(ctx, &vertices);
         bindings.index_buffer.update(ctx, &indices);
         ctx.apply_bindings(bindings);
         ctx.draw(0, indices.len() as i32, 1);
@@ -404,7 +400,6 @@ impl<'a> Renderer<'a> {
         ctx: &mut MiniContext,
         call: &Call,
         bindings: &Bindings,
-        vertices: &[Vertex],
         indices: &mut Vec<u16>,
         uniforms: &shader::Uniforms,
     ) {
@@ -415,7 +410,6 @@ impl<'a> Renderer<'a> {
         // glDrawArrays(GL_TRIANGLES, call.triangle_offset as i32, call.triangle_count as i32); // note: triangle_count is "number of indices to render", not number of triangles 
         Self::add_triangles(indices, call.triangle_offset as u16, call.triangle_count as u16);
 
-        bindings.vertex_buffers[0].update(ctx, &vertices);
         bindings.index_buffer.update(ctx, &indices);
         ctx.apply_bindings(bindings);
         ctx.draw(0, indices.len() as i32, 1);
@@ -622,7 +616,8 @@ impl renderer::Renderer for Renderer<'_> {
 
             // glUseProgram(self.shader.prog); DONE
             self.ctx.apply_pipeline(&self.pipeline);
-            self.ctx.apply_bindings(&self.bindings);
+            self.ctx.apply_bindings(&self.bindings); // NEEDED - must be called before vertex buffer update; TODO_BUG: can be optimized in miniquad; we only need to update index buffer in most cases, see do_convex_fill()
+            self.bindings.vertex_buffers[0].update(self.ctx, &self.vertexes); // TODO: miniquad BUG? this line must show after apply_bindings otherwise no display of vertex buffer can happen
 
             // glEnable(GL_CULL_FACE); // TODO: support in miniquad
             // glCullFace(GL_BACK); // TODO: support in miniquad
@@ -735,7 +730,6 @@ impl renderer::Renderer for Renderer<'_> {
                             call,
                             paths,
                             &self.bindings,
-                            &self.vertexes,
                             &mut self.indices,
                             uniforms,
                         );
@@ -751,7 +745,6 @@ impl renderer::Renderer for Renderer<'_> {
                             call,
                             paths,
                             &self.bindings,
-                            &self.vertexes,
                             &mut self.indices,
                             &uniforms,
                             &uniforms_next,
@@ -762,7 +755,6 @@ impl renderer::Renderer for Renderer<'_> {
                             self.ctx,
                             call,
                             &self.bindings,
-                            &self.vertexes,
                             &mut self.indices,
                             uniforms,
                         );
