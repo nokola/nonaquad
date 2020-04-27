@@ -304,7 +304,7 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    unsafe fn do_convex_fill(
+    fn do_convex_fill(
         ctx: &mut MiniContext,
         paths: &[GLPath],
         bindings: &Bindings,
@@ -336,47 +336,47 @@ impl<'a> Renderer<'a> {
         ctx.draw(0, indices.len() as i32, 1);
     }
 
-    unsafe fn do_stroke(&self, call: &Call) {
-        // TODOKOLA: ADD support
-        // let paths = &self.paths[call.path_offset..call.path_offset + call.path_count];
+    fn do_stroke(
+        ctx: &mut MiniContext,
+        call: &Call,
+        paths: &[GLPath],
+        bindings: &Bindings,
+        vertices: &[Vertex],
+        indices: &mut Vec<u16>,
+        uniforms: &[shader::Uniforms],
+    ) {
+        indices.clear();
 
-        // glEnable(GL_STENCIL_TEST);
-        // glStencilMask(0xff);
-        // glStencilFunc(GL_EQUAL, 0x0, 0xff);
-        // glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+        // TODO glEnable(GL_STENCIL_TEST);
+
+        // TODO glStencilMask(0xff);
+        // TODO glStencilFunc(GL_EQUAL, 0x0, 0xff);
+        // TODO glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+
         // self.set_uniforms(call.uniform_offset + 1, call.image);
-        // for path in paths {
-        //     glDrawArrays(
-        //         GL_TRIANGLE_STRIP,
-        //         path.stroke_offset as i32,
-        //         path.stroke_count as i32,
-        //     );
-        // }
+        Self::set_uniforms(ctx, &uniforms[call.uniform_offset + 1], call.image);
+        for path in paths {
+            // glDrawArrays(GL_TRIANGLE_STRIP, path.stroke_offset as i32, path.stroke_count as i32);
+            Self::add_triangle_strip(indices, path.stroke_offset as u16, path.stroke_count as u16);
+        }
+        bindings.vertex_buffers[0].update(ctx, &vertices);
+        bindings.index_buffer.update(ctx, &indices);
+        ctx.apply_bindings(bindings);
+        ctx.draw(0, indices.len() as i32, 1);
 
         // self.set_uniforms(call.uniform_offset, call.image);
-        // glStencilFunc(GL_EQUAL, 0x0, 0xff);
-        // glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        // for path in paths {
-        //     glDrawArrays(
-        //         GL_TRIANGLE_STRIP,
-        //         path.stroke_offset as i32,
-        //         path.stroke_count as i32,
-        //     );
-        // }
+        Self::set_uniforms(ctx, &uniforms[call.uniform_offset], call.image);
+        // TODO glStencilFunc(GL_EQUAL, 0x0, 0xff);
+        // TODO glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        ctx.draw(0, indices.len() as i32, 1);
 
-        // glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-        // glStencilFunc(GL_ALWAYS, 0x0, 0xff);
-        // glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-        // for path in paths {
-        //     glDrawArrays(
-        //         GL_TRIANGLE_STRIP,
-        //         path.stroke_offset as i32,
-        //         path.stroke_count as i32,
-        //     );
-        // }
-        // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        // TODO glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        // TODO glStencilFunc(GL_ALWAYS, 0x0, 0xff);
+        // TODO glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
+        // ctx.draw(0, indices.len() as i32, 1); TODO: uncomment once above TODOs are done
+        // TODO glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-        // glDisable(GL_STENCIL_TEST);
+        // TODO glDisable(GL_STENCIL_TEST);
     }
 
     unsafe fn do_triangles(&mut self, call: &Call) {
@@ -707,7 +707,21 @@ impl renderer::Renderer for Renderer<'_> {
                             &mut self.indices,
                         );
                     }
-                    CallType::Stroke => self.do_stroke(&call),
+                    CallType::Stroke => {
+                        let paths =
+                            &self.paths[call.path_offset..call.path_offset + call.path_count];
+
+                        Self::do_stroke(
+                            self.ctx,
+                            call,
+                            paths,
+                            &self.bindings,
+                            &self.vertexes,
+                            &mut self.indices,
+                            &self.uniforms,
+                        );
+                        // self.do_stroke(&call),
+                    }
                     CallType::Triangles => {
                         // self.do_triangles(&call), WAS THIS
                         Self::set_uniforms(self.ctx, uniforms, call.image);
