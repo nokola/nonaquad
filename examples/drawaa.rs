@@ -45,7 +45,7 @@ impl EventHandlerFree for Stage {
             )
             .unwrap();
         nvg_context.begin_path();
-        nvg_context.rect((100.0, 100.0, 300.0, 300.0));
+        nvg_context.rect((100.0, 100.0, 400.0, 300.0));
         nvg_context.fill_paint(nvg::Gradient::Linear {
             start: (100, 100).into(),
             end: (400, 400).into(),
@@ -54,15 +54,14 @@ impl EventHandlerFree for Stage {
         });
         nvg_context.fill().unwrap();
 
-        // let origin = (150.0, 140.0);
-        // nvg_context.begin_path();
-        // // nvg_context.shape_antialias(false);
-        // nvg_context.circle(origin, 64.0);
-        // nvg_context.move_to(origin);
-        // nvg_context.line_to((origin.0 + 300.0, origin.1 - 50.0));
-        // nvg_context.stroke_paint(nvg::Color::rgba(1.0, 1.0, 0.0, 1.0));
-        // nvg_context.stroke_width(3.0);
-        // nvg_context.stroke().unwrap();
+        let origin = (150.0, 140.0);
+        nvg_context.begin_path();
+        nvg_context.circle(origin, 64.0);
+        nvg_context.move_to(origin);
+        nvg_context.line_to((origin.0 + 300.0, origin.1 - 50.0));
+        nvg_context.stroke_paint(nvg::Color::rgba(1.0, 1.0, 0.0, 1.0));
+        nvg_context.stroke_width(3.0);
+        nvg_context.stroke().unwrap();
 
         // nvg_context.save();
         // // nvg_context.global_composite_operation(nvg::CompositeOperation::Basic(nvg::BasicCompositeOperation::Lighter));
