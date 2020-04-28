@@ -304,7 +304,7 @@ impl Renderer<'_> {
         glEnable(GL_STENCIL_TEST);
         glStencilMask(0xff);
         glStencilFunc(GL_ALWAYS, 0, 0xff);
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glColorMask(GL_FALSE as _, GL_FALSE as _, GL_FALSE as _, GL_FALSE as _);
 
         self.set_uniforms(call.uniform_offset, call.image);
 
@@ -320,7 +320,7 @@ impl Renderer<'_> {
         }
         glEnable(GL_CULL_FACE);
 
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glColorMask(GL_TRUE as _, GL_TRUE as _, GL_TRUE as _, GL_TRUE as _);
 
         self.set_uniforms(call.uniform_offset + 1, call.image);
 
@@ -391,7 +391,7 @@ impl Renderer<'_> {
             );
         }
 
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glColorMask(GL_FALSE as _, GL_FALSE as _, GL_FALSE as _, GL_FALSE as _);
         glStencilFunc(GL_ALWAYS, 0x0, 0xff);
         glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
         for path in paths {
@@ -401,7 +401,7 @@ impl Renderer<'_> {
                 path.stroke_count as i32,
             );
         }
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glColorMask(GL_TRUE as _, GL_TRUE as _, GL_TRUE as _, GL_TRUE as _);
 
         glDisable(GL_STENCIL_TEST);
     }
@@ -713,7 +713,7 @@ impl renderer::Renderer for Renderer<'_> {
                 glEnable(GL_BLEND);
                 glDisable(GL_DEPTH_TEST);
                 glDisable(GL_SCISSOR_TEST);
-                glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+                glColorMask(GL_TRUE as _, GL_TRUE as _, GL_TRUE as _, GL_TRUE as _);
                 glStencilMask(0xffffffff);
                 glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
                 glStencilFunc(GL_ALWAYS, 0, 0xffffffff);
