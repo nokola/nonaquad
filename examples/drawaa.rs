@@ -31,8 +31,8 @@ impl EventHandlerFree for Stage {
     fn draw(&mut self) {
         let ctx = get_context();
 
-        let (width, height) = ctx.screen_size();
-        let device_pixel_ratio = ctx.dpi_scale();
+        let (width, height) = ctx.screen_size(); // the <physical width> == <logical width> * ctx.dpi_scale()
+        let device_pixel_ratio = ctx.dpi_scale(); // e.g. 1.5 for 150% scale
         let nvg_context = get_nvg_context();
 
         nvg_context
