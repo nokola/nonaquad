@@ -623,189 +623,177 @@ impl renderer::Renderer for Renderer<'_> {
 
             return Ok(());
         }
-        unsafe {
-            self.ctx.begin_default_pass(PassAction::Clear {
-                color: Some((0.5, 0.5, 1.0, 1.0)),
-                depth: None,
-                stencil: None,
-            });
+        self.ctx.begin_default_pass(PassAction::Clear {
+            color: Some((0.5, 0.5, 1.0, 1.0)),
+            depth: None,
+            stencil: None,
+        });
 
-            // glUseProgram(self.shader.prog); DONE
-            self.ctx.apply_pipeline(&self.pipeline);
-            self.ctx.apply_bindings(&self.bindings); // NEEDED - must be called before vertex buffer update; TODO_BUG: can be optimized in miniquad; we only need to update index buffer in most cases, see do_convex_fill()
-            self.bindings.vertex_buffers[0].update(self.ctx, &self.vertexes); // TODO: miniquad BUG? this line must show after apply_bindings otherwise no display of vertex buffer can happen
+        // glUseProgram(self.shader.prog); DONE
+        self.ctx.apply_pipeline(&self.pipeline);
+        self.ctx.apply_bindings(&self.bindings); // NEEDED - must be called before vertex buffer update; TODO_BUG: can be optimized in miniquad; we only need to update index buffer in most cases, see do_convex_fill()
+        self.bindings.vertex_buffers[0].update(self.ctx, &self.vertexes); // TODO: miniquad BUG? this line must show after apply_bindings otherwise no display of vertex buffer can happen
 
-            // glEnable(GL_CULL_FACE); // TODO: support in miniquad
-            // glCullFace(GL_BACK); // TODO: support in miniquad
-            // glFrontFace(GL_CCW); // DONE front_face_order
+        // glEnable(GL_CULL_FACE); // TODO: support in miniquad
+        // glCullFace(GL_BACK); // TODO: support in miniquad
+        // glFrontFace(GL_CCW); // DONE front_face_order
 
-            // glEnable(GL_BLEND); // TODO_BELOW
-            // glDisable(GL_DEPTH_TEST); DONE: depth_write: false, on PipelineParams
-            // glDisable(GL_SCISSOR_TEST); // TODO: support in miniquad
+        // glEnable(GL_BLEND); // TODO_BELOW
+        // glDisable(GL_DEPTH_TEST); DONE: depth_write: false, on PipelineParams
+        // glDisable(GL_SCISSOR_TEST); // TODO: support in miniquad
 
-            // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // DONE color_write
-            // glStencilMask(0xffffffff); // TODO: support in miniquad
-            // glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // TODO: support in miniquad
-            // glStencilFunc(GL_ALWAYS, 0, 0xffffffff); // TODO: support in miniquad
+        // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // DONE color_write
+        // glStencilMask(0xffffffff); // TODO: support in miniquad
+        // glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // TODO: support in miniquad
+        // glStencilFunc(GL_ALWAYS, 0, 0xffffffff); // TODO: support in miniquad
 
-            // glActiveTexture(GL_TEXTURE0); // TODO: implement
-            // glBindTexture(GL_TEXTURE_2D, 0); // TODO: implement
+        // glActiveTexture(GL_TEXTURE0); // TODO: implement
+        // glBindTexture(GL_TEXTURE_2D, 0); // TODO: implement
 
-            // TODOKOLA: commented:
-            // glBindVertexArray(self.vert_arr);
-            // glBindBuffer(GL_ARRAY_BUFFER, self.vert_buf);
-            // glBufferData(
-            //     GL_ARRAY_BUFFER,
-            //     (self.vertexes.len() * std::mem::size_of::<Vertex>()) as GLsizeiptr,
-            //     self.vertexes.as_ptr() as *const c_void,
-            //     GL_STREAM_DRAW,
+        // TODOKOLA: commented:
+        // glBindVertexArray(self.vert_arr);
+        // glBindBuffer(GL_ARRAY_BUFFER, self.vert_buf);
+        // glBufferData(
+        //     GL_ARRAY_BUFFER,
+        //     (self.vertexes.len() * std::mem::size_of::<Vertex>()) as GLsizeiptr,
+        //     self.vertexes.as_ptr() as *const c_void,
+        //     GL_STREAM_DRAW,
+        // );
+        // glEnableVertexAttribArray(self.shader.loc_vertex);
+        // glEnableVertexAttribArray(self.shader.loc_tcoord);
+        // glVertexAttribPointer(
+        //     self.shader.loc_vertex,
+        //     2, // size in floats
+        //     GL_FLOAT,
+        //     GL_FALSE as GLboolean,
+        //     std::mem::size_of::<Vertex>() as i32,
+        //     std::ptr::null(),
+        // );
+        // glVertexAttribPointer(
+        //     self.shader.loc_tcoord,
+        //     2, // size in floats
+        //     GL_FLOAT,
+        //     GL_FALSE as GLboolean,
+        //     std::mem::size_of::<Vertex>() as i32,
+        //     (2 * std::mem::size_of::<f32>()) as *const c_void, // use GL_ARRAY_BUFFER, and skip x,y (2 floats) to start sampling at u, v
+        // );
+        // glUniform1i(self.shader.loc_tex, 0);
+        // glUniform2fv(
+        //     self.shader.loc_viewsize,
+        //     1,
+        //     &self.view as *const Extent as *const f32,
+        // );
+
+        let calls = &self.calls[..];
+        for call in calls {
+            let call: &Call = call; // added to make rust-analyzer type inferrence work. See https://github.com/rust-analyzer/rust-analyzer/issues/4160
+            let blend = &call.blend_func;
+
+            self.ctx.set_blend(Some(blend.0));
+
+            // {
+            //     // TODO: set image in a better way!!!
+            //     self.bindings.images = vec![];
+            //     self.ctx.apply_bindings(&self.bindings);
+            // }
+
+            // glBlendFuncSeparate( // TODO: DELETE once tested
+            //     blend.src_rgb,
+            //     blend.dst_rgb,
+            //     blend.src_alpha,
+            //     blend.dst_alpha,
             // );
-            // glEnableVertexAttribArray(self.shader.loc_vertex);
-            // glEnableVertexAttribArray(self.shader.loc_tcoord);
-            // glVertexAttribPointer(
-            //     self.shader.loc_vertex,
-            //     2, // size in floats
-            //     GL_FLOAT,
-            //     GL_FALSE as GLboolean,
-            //     std::mem::size_of::<Vertex>() as i32,
-            //     std::ptr::null(),
-            // );
-            // glVertexAttribPointer(
-            //     self.shader.loc_tcoord,
-            //     2, // size in floats
-            //     GL_FLOAT,
-            //     GL_FALSE as GLboolean,
-            //     std::mem::size_of::<Vertex>() as i32,
-            //     (2 * std::mem::size_of::<f32>()) as *const c_void, // use GL_ARRAY_BUFFER, and skip x,y (2 floats) to start sampling at u, v
-            // );
-            // glUniform1i(self.shader.loc_tex, 0);
-            // glUniform2fv(
-            //     self.shader.loc_viewsize,
-            //     1,
-            //     &self.view as *const Extent as *const f32,
-            // );
 
-            let calls = &self.calls[..];
-            for call in calls {
-                let call: &Call = call; // added to make rust-analyzer type inferrence work. See https://github.com/rust-analyzer/rust-analyzer/issues/4160
-                let blend = &call.blend_func;
+            // println!("Call {:?}", call.call_type); // DEBUG
 
-                self.ctx.set_blend(Some(blend.0));
+            // update view size for the uniforms that may be in use
+            self.uniforms[call.uniform_offset].view_size = self.ctx.screen_size();
+            if self.uniforms.len() > call.uniform_offset + 1 {
+                self.uniforms[call.uniform_offset + 1].view_size = self.ctx.screen_size();
+            }
+            let uniforms: &shader::Uniforms = &self.uniforms[call.uniform_offset];
 
-                // {
-                //     // TODO: set image in a better way!!!
-                //     self.bindings.images = vec![];
-                //     self.ctx.apply_bindings(&self.bindings);
-                // }
+            match call.call_type {
+                CallType::Fill => {
+                    // TODO: test!
+                    let paths = &self.paths[call.path_offset..call.path_offset + call.path_count];
 
-                // glBlendFuncSeparate( // TODO: DELETE once tested
-                //     blend.src_rgb,
-                //     blend.dst_rgb,
-                //     blend.src_alpha,
-                //     blend.dst_alpha,
-                // );
+                    let uniforms_next: &shader::Uniforms = &self.uniforms[call.uniform_offset + 1];
 
-                // println!("Call {:?}", call.call_type); // DEBUG
-
-                // update view size for the uniforms that may be in use
-                self.uniforms[call.uniform_offset].view_size = self.ctx.screen_size();
-                if self.uniforms.len() > call.uniform_offset + 1 {
-                    self.uniforms[call.uniform_offset + 1].view_size = self.ctx.screen_size();
+                    Self::do_fill(
+                        self.ctx,
+                        call,
+                        paths,
+                        &self.bindings,
+                        &mut self.indices,
+                        &uniforms,
+                        &uniforms_next,
+                    );
                 }
-                let uniforms: &shader::Uniforms = &self.uniforms[call.uniform_offset];
+                CallType::ConvexFill => {
+                    // test data:
+                    // let val = 0.0;
+                    // #[rustfmt::skip]
+                    // let vertices: [Vertex; 4] = [
+                    //     Vertex { x: 100.0, y: 100.0, u: 0., v: 0. },
+                    //     Vertex { x: 150.0, y: 50.0, u: 1., v: 0. },
+                    //     Vertex { x: 100.0, y: 50.0, u: 1., v: 1. },
+                    //     Vertex { x: -0.5 + val, y:  0.5 + val, u: 0., v: 1. },
+                    // ];
+                    // let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
 
-                match call.call_type {
-                    CallType::Fill => { // TODO: test!
-                        let paths =
-                            &self.paths[call.path_offset..call.path_offset + call.path_count];
+                    // self.bindings.vertex_buffers[0].update(self.ctx, &vertices);
+                    // self.bindings
+                    //     .index_buffer
+                    //     .update(self.ctx, &indices);
 
-                        let uniforms_next: &shader::Uniforms =
-                            &self.uniforms[call.uniform_offset + 1];
+                    // self.ctx.apply_bindings(&self.bindings);
+                    // Self::set_uniforms(self.ctx, uniforms, call.image);
 
-                        Self::do_fill(
-                            self.ctx,
-                            call,
-                            paths,
-                            &self.bindings,
-                            &mut self.indices,
-                            &uniforms,
-                            &uniforms_next,
-                        );
-                    }
-                    CallType::ConvexFill => {
-                        // test data:
-                        // let val = 0.0;
-                        // #[rustfmt::skip]
-                        // let vertices: [Vertex; 4] = [
-                        //     Vertex { x: 100.0, y: 100.0, u: 0., v: 0. },
-                        //     Vertex { x: 150.0, y: 50.0, u: 1., v: 0. },
-                        //     Vertex { x: 100.0, y: 50.0, u: 1., v: 1. },
-                        //     Vertex { x: -0.5 + val, y:  0.5 + val, u: 0., v: 1. },
-                        // ];
-                        // let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
+                    // self.ctx.draw(0, 3, 1);
 
-                        // self.bindings.vertex_buffers[0].update(self.ctx, &vertices);
-                        // self.bindings
-                        //     .index_buffer
-                        //     .update(self.ctx, &indices);
+                    let paths = &self.paths[call.path_offset..call.path_offset + call.path_count];
 
-                        // self.ctx.apply_bindings(&self.bindings);
-                        // Self::set_uniforms(self.ctx, uniforms, call.image);
+                    Self::do_convex_fill(
+                        self.ctx,
+                        call,
+                        paths,
+                        &self.bindings,
+                        &mut self.indices,
+                        uniforms,
+                    );
+                }
+                CallType::Stroke => {
+                    let paths = &self.paths[call.path_offset..call.path_offset + call.path_count];
+                    let uniforms_next: &shader::Uniforms = &self.uniforms[call.uniform_offset + 1];
 
-                        // self.ctx.draw(0, 3, 1);
-
-                        let paths =
-                            &self.paths[call.path_offset..call.path_offset + call.path_count];
-
-                        Self::do_convex_fill(
-                            self.ctx,
-                            call,
-                            paths,
-                            &self.bindings,
-                            &mut self.indices,
-                            uniforms,
-                        );
-                    }
-                    CallType::Stroke => {
-                        let paths =
-                            &self.paths[call.path_offset..call.path_offset + call.path_count];
-                        let uniforms_next: &shader::Uniforms =
-                            &self.uniforms[call.uniform_offset + 1];
-
-                        Self::do_stroke(
-                            self.ctx,
-                            call,
-                            paths,
-                            &self.bindings,
-                            &mut self.indices,
-                            &uniforms,
-                            &uniforms_next,
-                        );
-                    }
-                    CallType::Triangles => {
-                        Self::do_triangles(
-                            self.ctx,
-                            call,
-                            &self.bindings,
-                            &mut self.indices,
-                            uniforms,
-                        );
-                    }
+                    Self::do_stroke(
+                        self.ctx,
+                        call,
+                        paths,
+                        &self.bindings,
+                        &mut self.indices,
+                        &uniforms,
+                        &uniforms_next,
+                    );
+                }
+                CallType::Triangles => {
+                    Self::do_triangles(self.ctx, call, &self.bindings, &mut self.indices, uniforms);
                 }
             }
-
-            self.ctx.end_render_pass();
-            self.ctx.commit_frame();
-
-            // TODO: commented, not needed??
-            // glDisableVertexAttribArray(self.shader.loc_vertex);
-            // glDisableVertexAttribArray(self.shader.loc_tcoord);
-            // glBindVertexArray(0);
-            // glDisable(GL_CULL_FACE);
-            // glBindBuffer(GL_ARRAY_BUFFER, 0);
-            // glUseProgram(0);
-            // glBindTexture(GL_TEXTURE_2D, 0);
         }
+
+        self.ctx.end_render_pass();
+        self.ctx.commit_frame();
+
+        // TODO: commented, not needed??
+        // glDisableVertexAttribArray(self.shader.loc_vertex);
+        // glDisableVertexAttribArray(self.shader.loc_tcoord);
+        // glBindVertexArray(0);
+        // glDisable(GL_CULL_FACE);
+        // glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // glUseProgram(0);
+        // glBindTexture(GL_TEXTURE_2D, 0);
 
         self.vertexes.clear();
         self.paths.clear();
