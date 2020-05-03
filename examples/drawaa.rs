@@ -19,9 +19,7 @@ impl Stage {
         let renderer = nvgimpl::Renderer::create(get_context()).unwrap();
         let nvg_context = nvg::Context::create(renderer).unwrap();
         unsafe { NVG_CONTEXT = Some(nvg_context) };
-        Stage {
-            // nvg_context,
-        }
+        Stage {}
     }
 }
 
@@ -87,7 +85,10 @@ impl EventHandlerFree for Stage {
 fn main() {
     color_backtrace::install();
 
-    miniquad::start(conf::Conf::default(), |ctx| {
+    miniquad::start(conf::Conf {
+     high_dpi: true,
+     ..Default::default()
+    }, |ctx| {
         unsafe { MINI_CONTEXT = Some(ctx) };
 
         UserData::free(Stage::new())
