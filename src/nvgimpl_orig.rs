@@ -308,8 +308,8 @@ impl Renderer<'_> {
 
         self.set_uniforms(call.uniform_offset, call.image);
 
-        // glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
-        // glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+        glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+        glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
         glDisable(GL_CULL_FACE);
         for path in paths {
             glDrawArrays(
