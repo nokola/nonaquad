@@ -216,21 +216,42 @@ impl<'a> Renderer<'a> {
         indices.clear();
         // TODO: test!!!
 
-        // TODO glEnable(GL_STENCIL_TEST);
-        // TODO glStencilMask(0xff);
-        // TODO glStencilFunc(GL_ALWAYS, 0, 0xff);
-        // TODO glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-        // self.set_uniforms(call.uniform_offset, call.image);
+        ctx.set_stencil(Some(StencilState {
+            front: StencilFaceState {
+                fail_op: StencilOp::Keep,
+                depth_fail_op: StencilOp::Keep,
+                pass_op: StencilOp::IncrementWrap,
+                test_func: CompareFunc::Always,
+                test_ref: 0,
+                test_mask: 0xff,
+                write_mask: 0xff,
+            },
+            back: StencilFaceState {
+                fail_op: StencilOp::Keep,
+                depth_fail_op: StencilOp::Keep,
+                pass_op: StencilOp::DecrementWrap,
+                test_func: CompareFunc::Always,
+                test_ref: 0,
+                test_mask: 0xff,
+                write_mask: 0xff,
+            },
+        }));
+        ctx.set_color_write((false, false, false, false));
+        // glEnable(GL_STENCIL_TEST);
+        // glStencilMask(0xff);
+        // glStencilFunc(GL_ALWAYS, 0, 0xff);
+        // glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         Self::set_uniforms(ctx, uniforms, call.image);
-        // TODO glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
-        // TODO glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+        // glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+        // glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
         // TODO glDisable(GL_CULL_FACE);
         for path in paths {
             // glDrawArrays(GL_TRIANGLE_FAN, path.fill_offset as i32, path.fill_count as i32);
             Self::add_triangle_fan(indices, path.fill_offset as u16, path.fill_count as u16);
         }
         // TODO glEnable(GL_CULL_FACE);
-        // TODO glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        ctx.set_color_write((true, true, true, true));
+        // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         bindings.index_buffer.update(ctx, &indices);
         ctx.apply_bindings(bindings);
         ctx.draw(0, indices.len() as i32, 1);
@@ -238,8 +259,28 @@ impl<'a> Renderer<'a> {
         indices.clear();
         // self.set_uniforms(call.uniform_offset + 1, call.image);
         Self::set_uniforms(ctx, uniforms_next, call.image);
-        // TODO glStencilFunc(GL_EQUAL, 0x00, 0xff);
-        // TODO glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        // glStencilFunc(GL_EQUAL, 0x00, 0xff);
+        // glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        ctx.set_stencil(Some(StencilState {
+            front: StencilFaceState {
+                fail_op: StencilOp::Keep,
+                depth_fail_op: StencilOp::Keep,
+                pass_op: StencilOp::Keep,
+                test_func: CompareFunc::Equal,
+                test_ref: 0,
+                test_mask: 0xff,
+                write_mask: 0xff,
+            },
+            back: StencilFaceState {
+                fail_op: StencilOp::Keep,
+                depth_fail_op: StencilOp::Keep,
+                pass_op: StencilOp::Keep,
+                test_func: CompareFunc::Equal,
+                test_ref: 0,
+                test_mask: 0xff,
+                write_mask: 0xff,
+            },
+        }));
         for path in paths {
             // glDrawArrays(GL_TRIANGLE_STRIP, path.stroke_offset as i32, path.stroke_count as i32);
             Self::add_triangle_strip(indices, path.stroke_offset as u16, path.stroke_count as u16);
@@ -249,8 +290,28 @@ impl<'a> Renderer<'a> {
         ctx.draw(0, indices.len() as i32, 1);
 
         indices.clear();
-        // TODO glStencilFunc(GL_NOTEQUAL, 0x00, 0xff);
-        // TODO glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
+        // glStencilFunc(GL_NOTEQUAL, 0x00, 0xff);
+        // glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
+        ctx.set_stencil(Some(StencilState {
+            front: StencilFaceState {
+                fail_op: StencilOp::Zero,
+                depth_fail_op: StencilOp::Zero,
+                pass_op: StencilOp::Zero,
+                test_func: CompareFunc::NotEqual,
+                test_ref: 0,
+                test_mask: 0xff,
+                write_mask: 0xff,
+            },
+            back: StencilFaceState {
+                fail_op: StencilOp::Zero,
+                depth_fail_op: StencilOp::Zero,
+                pass_op: StencilOp::Zero,
+                test_func: CompareFunc::NotEqual,
+                test_ref: 0,
+                test_mask: 0xff,
+                write_mask: 0xff,
+            },
+        }));
         // glDrawArrays(GL_TRIANGLE_STRIP, call.triangle_offset as i32, call.triangle_count as i32);
         Self::add_triangle_strip(
             indices,
@@ -261,7 +322,8 @@ impl<'a> Renderer<'a> {
         ctx.apply_bindings(bindings);
         ctx.draw(0, indices.len() as i32, 1);
 
-        // TODO glDisable(GL_STENCIL_TEST);
+        ctx.set_stencil(None);
+        // glDisable(GL_STENCIL_TEST);
     }
 
     // from https://www.khronos.org/opengl/wiki/Primitive:
