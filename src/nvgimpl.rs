@@ -47,6 +47,7 @@ struct Call {
 
 struct Texture {
     tex: miniquad::Texture,
+    texture_intent_format: TextureFormat,
     flags: ImageFlags,
 }
 
@@ -602,15 +603,17 @@ impl renderer::Renderer for Renderer<'_> {
         flags: ImageFlags,
         data: Option<&[u8]>,
     ) -> anyhow::Result<ImageId> {
+        let texture_intent_format = match texture_type {
+            TextureType::RGBA => TextureFormat::RGBA8,
+            TextureType::Alpha => TextureFormat::Alpha,
+        };
         let tex: miniquad::Texture = miniquad::Texture::new(
             self.ctx,
             TextureAccess::Static,
             data,
+            TextureFormat::RGBA8,
             TextureParams {
-                format: match texture_type {
-                    TextureType::RGBA => TextureFormat::RGBA8,
-                    TextureType::Alpha => TextureFormat::RGBA8, // TODO: support alpha textures
-                },
+                format: TextureFormat::RGBA8, // TODO: support alpha textures once miniquad supports them
                 wrap: TextureWrap::Clamp, // TODO: support repeatx/y/mirror
                 filter: if flags.contains(ImageFlags::NEAREST) {
                     FilterMode::Nearest
@@ -624,7 +627,11 @@ impl renderer::Renderer for Renderer<'_> {
 
         // TODO: support ImageFlags::GENERATE_MIPMAPS) with/without if flags.contains(ImageFlags::NEAREST) {
 
-        let id = self.textures.insert(Texture { tex, flags });
+        let id = self.textures.insert(Texture {
+            tex,
+            texture_intent_format,
+            flags,
+        });
         Ok(id)
     }
 
@@ -648,7 +655,15 @@ impl renderer::Renderer for Renderer<'_> {
         data: &[u8],
     ) -> anyhow::Result<()> {
         if let Some(texture) = self.textures.get(img) {
-            texture.tex.update(self.ctx, data);
+            texture.tex.update_texture_part(
+                self.ctx,
+                x as _,
+                y as _,
+                width as _,
+                height as _,
+                data,
+                TextureFormat::Alpha,
+            );
             Ok(())
         } else {
             bail!("texture '{}' not found", img);
