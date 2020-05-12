@@ -1,12 +1,29 @@
 
 # nvg-miniquad
-Vector AA drawing for Android, WASM, Desktop in Rust. Built on top of NanoVG.
+Vector anti-aliased drawing for Android, WASM, Desktop in Rust.
 
-Runtime focus on small and fast executables for mobile, desktop and web. 
+This library started as a port of [NanoVG](https://github.com/sunli829/nvg/tree/master/nvg-gl) for [miniquad](https://github.com/not-fl3/miniquad). Use this library if you want to draw graphics for a quick experiment (game, paint app, etc.) or if you want to build other libraries on top (e.g. UI library.)
 
-Development focus on minimal dependencies, ease-of-use, safety.
+## Goals
+* small and fast executables for mobile, desktop and web. 
+* safety
+* high-quality drawing: (anti-aliasing in shaders, squircles, gradients, fast blur)
+* ease-of-use
+* minimal dependencies
 
-A port of [nvg-gl](https://github.com/sunli829/nvg/tree/master/nvg-gl) for [miniquad](https://github.com/not-fl3/miniquad).
+## Supported platforms
+
+* Windows, OpenGl 3
+* Linux, OpenGl 3
+* macOS, OpenGL 3
+* WASM, WebGl1 - tested on ios safari, ff, chrome
+* Android, GLES3
+
+## Not supported, but desirable platforms
+
+* Android, GLES2 - work in progress.
+* Metal. Highly desirable.
+* Raspberry Pi - work in progress
 
 # Example
 
@@ -96,8 +113,8 @@ docker run -it -v %cd%":/root/src" -w /root/src notfl3/cargo-apk bash
 
 APK file will be in `target/android-artifacts/(debug|release)/apk`
 
-With "log-impl" enabled all log calls will be forwarded to adb console.
-No code modifications for Android required, everything should just works.
+With feature "log-impl" enabled all log calls will be forwarded to adb console.
+No code modifications for Android required, everything just works.
 
 ## iOS
 Not supported yet
@@ -107,12 +124,16 @@ The goal of nvg-miniquad is to have a stable, high-quality vector library on mob
 
 I will use it as a building block for a general purpose cross-platform app framework.
 
-Overview of changes coming up:
-1. Move to miniquad's Context instead of raw OpenGL calls. This will make it easier to port to Metal later.
-
-    a. Update miniquad's Context to support whatever nvg-miniquad needs
-
-2. iOS support
+## Features
+- [x] anti-aliased lines, circles, rect, rounded rect (signed distance field), curves
+- [x] polygons - convex and concave
+- [x] gradients (standard)
+- [x] AA text
+- [x] image and textures
+- [x] clipping
+- [ ] high-quality fast drop shadows (blur)
+- [ ] gradients (dithered)
+- [ ] squircles
 
 # Contributing
 See TODO-s in source code or anything else goes
