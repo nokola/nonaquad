@@ -130,9 +130,9 @@ I will use it as a building block for a general purpose cross-platform app frame
 - [x] anti-aliased lines, circles, rect, rounded rect (signed distance field), curves
 - [x] polygons - convex and concave
 - [x] gradients (standard)
-- [x] AA text
-- [x] image and textures
 - [x] clipping
+- [ ] [Work in progress] AA text
+- [ ] [Work in progress] image and textures
 - [ ] high-quality fast drop shadows (blur)
 - [ ] gradients (dithered)
 - [ ] squircles
