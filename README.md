@@ -7,8 +7,8 @@ This library started as a port of [NanoVG](https://github.com/sunli829/nvg/tree/
 ## Goals
 * small and fast executables for mobile, desktop and web. 
 * safety
-* high-quality drawing: (anti-aliasing in shaders, squircles, gradients, fast blur)
-* 1-step (or straight-forward) build on all platforms
+* high-quality drawing: anti-aliasing in shaders, squircles, gradients, fast blur
+* 1-step or straight-forward build on all platforms
 * ease-of-use
 * minimal dependencies
 
