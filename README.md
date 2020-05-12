@@ -59,6 +59,7 @@ Screenshots produced from above example.
 
 ## Web
 ![WebGL](https://user-images.githubusercontent.com/6869225/77838092-4e52cf80-7125-11ea-842f-665abfad59a9.png)
+
 WASM size before size stripping 640KB - ought to be enough for everyone. 
 
 ## Android
