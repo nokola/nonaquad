@@ -9,7 +9,8 @@ nvg = "0.5.9"
 slab = "0.4.2"
 anyhow = "1.0.26"
 glam = {version = "0.8", features = ["scalar-math"] }
-color-backtrace = { version = "0.3" }
+# note: color-backtrace does not work for wasm32-unknown-unknown due to memmap dependency
+# color-backtrace = { version = "0.3" }
 
 [dependencies.miniquad]
 path = '..\miniquad-nokola'

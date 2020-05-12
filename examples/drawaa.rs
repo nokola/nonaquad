@@ -92,7 +92,7 @@ impl EventHandlerFree for Stage {
 }
 
 fn main() {
-    color_backtrace::install();
+    // color_backtrace::install();
 
     miniquad::start(conf::Conf {
      high_dpi: true,
