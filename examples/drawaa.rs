@@ -17,7 +17,8 @@ fn get_nvg_context() -> &'static mut nvg::Context<nvgimpl::Renderer<'static>> {
 impl Stage {
     pub fn new() -> Stage {
         let renderer = nvgimpl::Renderer::create(get_context()).unwrap();
-        let nvg_context = nvg::Context::create(renderer).unwrap();
+        let mut nvg_context = nvg::Context::create(renderer).unwrap();
+        nvg_context.create_font_from_file("roboto", "examples/Roboto-Bold.ttf").unwrap();
         unsafe { NVG_CONTEXT = Some(nvg_context) };
         Stage {}
     }
@@ -60,6 +61,14 @@ impl EventHandlerFree for Stage {
         nvg_context.stroke_paint(nvg::Color::rgba(1.0, 1.0, 0.0, 1.0));
         nvg_context.stroke_width(3.0);
         nvg_context.stroke().unwrap();
+
+        nvg_context.fill_paint(nvg::Color::rgb(1.0, 1.0, 1.0));
+        nvg_context.font("roboto");
+        nvg_context.font_size(40.0);
+        nvg_context.begin_path();
+        nvg_context.text_align(nvg::Align::TOP | nvg::Align::LEFT);
+        nvg_context.text((10, 10), format!("wazzup")).unwrap();
+        nvg_context.fill().unwrap();
 
         // nvg_context.save();
         // // nvg_context.global_composite_operation(nvg::CompositeOperation::Basic(nvg::BasicCompositeOperation::Lighter));
