@@ -789,6 +789,10 @@ impl renderer::Renderer for Renderer<'_> {
                 self.uniforms[call.uniform_offset + 1].view_size = self.ctx.screen_size();
             }
             let uniforms: &shader::Uniforms = &self.uniforms[call.uniform_offset];
+            if let Some(image_index) = call.image {
+                self.bindings.images[0] = self.textures[image_index].tex;
+                // self.ctx.apply_bindings(&self.bindings); // not needed - will be called in the call_type handlers below
+            }
 
             match call.call_type {
                 CallType::Fill => {
