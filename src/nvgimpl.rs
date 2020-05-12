@@ -245,12 +245,15 @@ impl<'a> Renderer<'a> {
         Self::set_uniforms(ctx, uniforms, call.image);
         // glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
         // glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
-        // TODO glDisable(GL_CULL_FACE);
+        // glDisable(GL_CULL_FACE);
+        ctx.set_cull_face(CullFace::Nothing);
         for path in paths {
             // glDrawArrays(GL_TRIANGLE_FAN, path.fill_offset as i32, path.fill_count as i32);
             Self::add_triangle_fan(indices, path.fill_offset as u16, path.fill_count as u16);
         }
-        // TODO glEnable(GL_CULL_FACE);
+        ctx.set_cull_face(CullFace::Back);
+        // glEnable(GL_CULL_FACE);
+
         ctx.set_color_write((true, true, true, true));
         // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         bindings.index_buffer.update(ctx, &indices);
@@ -614,7 +617,7 @@ impl renderer::Renderer for Renderer<'_> {
             TextureFormat::RGBA8,
             TextureParams {
                 format: TextureFormat::RGBA8, // TODO: support alpha textures once miniquad supports them
-                wrap: TextureWrap::Clamp, // TODO: support repeatx/y/mirror
+                wrap: TextureWrap::Clamp,     // TODO: support repeatx/y/mirror
                 filter: if flags.contains(ImageFlags::NEAREST) {
                     FilterMode::Nearest
                 } else {
@@ -711,8 +714,9 @@ impl renderer::Renderer for Renderer<'_> {
         self.ctx.apply_bindings(&self.bindings); // NEEDED - must be called before vertex buffer update; TODO_BUG: can be optimized in miniquad; we only need to update index buffer in most cases, see do_convex_fill()
         self.bindings.vertex_buffers[0].update(self.ctx, &self.vertexes); // TODO: miniquad BUG? this line must show after apply_bindings otherwise no display of vertex buffer can happen
 
-        // glEnable(GL_CULL_FACE); // TODO: support in miniquad
-        // glCullFace(GL_BACK); // TODO: support in miniquad
+        // glEnable(GL_CULL_FACE);
+        // glCullFace(GL_BACK);
+        self.ctx.set_cull_face(CullFace::Back);
         // glFrontFace(GL_CCW); // DONE front_face_order
 
         // glEnable(GL_BLEND); // TODO_BELOW
@@ -871,7 +875,10 @@ impl renderer::Renderer for Renderer<'_> {
         // glDisableVertexAttribArray(self.shader.loc_vertex);
         // glDisableVertexAttribArray(self.shader.loc_tcoord);
         // glBindVertexArray(0);
+
         // glDisable(GL_CULL_FACE);
+        self.ctx.set_cull_face(CullFace::Nothing);
+
         // glBindBuffer(GL_ARRAY_BUFFER, 0);
         // glUseProgram(0);
         // glBindTexture(GL_TEXTURE_2D, 0);
