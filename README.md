@@ -129,12 +129,12 @@ I will use it as a building block for a general purpose cross-platform app frame
 ## Features
 - [x] anti-aliased lines, circles, rect, rounded rect (signed distance field), curves
 - [x] polygons - convex and concave
-- [x] gradients (standard)
+- [x] gradients
 - [x] clipping
 - [ ] [Work in progress] AA text
 - [ ] [Work in progress] image and textures
-- [ ] high-quality fast drop shadows (blur)
-- [ ] gradients (dithered)
+- [ ] high-quality fast drop shadows and blur
+- [ ] gradients - high quality dithered
 - [ ] squircles
 
 # Contributing
