@@ -28,16 +28,16 @@ struct Blend {
 impl From<CompositeOperationState> for Blend {
     fn from(state: CompositeOperationState) -> Self {
         Blend {
-            color: BlendState {
-                equation: Equation::Add,
-                sfactor: convert_blend_factor(state.src_rgb),
-                dfactor: convert_blend_factor(state.dst_rgb),
-            },
-            alpha: BlendState {
-                equation: Equation::Add,
-                sfactor: convert_blend_factor(state.src_alpha),
-                dfactor: convert_blend_factor(state.dst_alpha),
-            },
+            color: BlendState::new(
+                Equation::Add,
+                convert_blend_factor(state.src_rgb),
+                convert_blend_factor(state.dst_rgb),
+            ),
+            alpha: BlendState::new(
+                Equation::Add,
+                convert_blend_factor(state.src_alpha),
+                convert_blend_factor(state.dst_alpha),
+            ),
         }
     }
 }
