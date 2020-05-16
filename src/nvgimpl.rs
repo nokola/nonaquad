@@ -19,18 +19,26 @@ enum CallType {
     Triangles,
 }
 
-struct Blend(BlendState);
+/// Color and Alpha blend states
+struct Blend {
+    pub color: BlendState,
+    pub alpha: BlendState,
+}
 
 impl From<CompositeOperationState> for Blend {
     fn from(state: CompositeOperationState) -> Self {
-        Blend(BlendState {
-            eq_rgb: Equation::Add,
-            eq_alpha: Equation::Add,
-            src_rgb: convert_blend_factor(state.src_rgb),
-            dst_rgb: convert_blend_factor(state.dst_rgb),
-            src_alpha: convert_blend_factor(state.src_alpha),
-            dst_alpha: convert_blend_factor(state.dst_alpha),
-        })
+        Blend {
+            color: BlendState {
+                equation: Equation::Add,
+                sfactor: convert_blend_factor(state.src_rgb),
+                dfactor: convert_blend_factor(state.dst_rgb),
+            },
+            alpha: BlendState {
+                equation: Equation::Add,
+                sfactor: convert_blend_factor(state.src_alpha),
+                dfactor: convert_blend_factor(state.dst_alpha),
+            },
+        }
     }
 }
 
@@ -770,7 +778,7 @@ impl renderer::Renderer for Renderer<'_> {
             let call: &Call = call; // added to make rust-analyzer type inferrence work. See https://github.com/rust-analyzer/rust-analyzer/issues/4160
             let blend = &call.blend_func;
 
-            self.ctx.set_blend(Some(blend.0));
+            self.ctx.set_blend(Some(blend.color), Some(blend.alpha));
 
             // {
             //     // TODO: set image in a better way!!!
