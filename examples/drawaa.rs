@@ -67,7 +67,7 @@ impl EventHandlerFree for Stage {
         nvg_context.font_size(40.0);
         nvg_context.begin_path();
         nvg_context.text_align(nvg::Align::TOP | nvg::Align::LEFT);
-        nvg_context.text((10, 10), format!("wazzup")).unwrap();
+        nvg_context.text((10, 10), format!("alpha texture font - working!!!")).unwrap();
         nvg_context.fill().unwrap();
 
         // nvg_context.save();

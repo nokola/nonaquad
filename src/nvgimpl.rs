@@ -570,6 +570,7 @@ impl<'a> Renderer<'a> {
                             1
                         }
                     }
+                    TextureFormat::Alpha => frag.tex_type = 2,
                     _ => todo!("Unsupported texture type"),
                 }
             }

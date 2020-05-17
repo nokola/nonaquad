@@ -13,6 +13,11 @@ uniform float radius;
 uniform float feather;
 uniform float strokeMult;
 uniform float strokeThr;
+
+// texture type:
+// 0: RGBA, premultiplied
+// 1: RGBA, not premultiplied
+// 2: Alpha texture, alpha value is stored in .a (miniquad always stores in .a for alpha textures)
 uniform int texType;
 uniform int type;
 
@@ -54,8 +59,8 @@ void main(void) {
         // Image
         vec2 pt = (mat3(paintMat) * vec3(fpos, 1.0)).xy / extent;
         vec4 color = texture2D(tex, pt);
-        if (texType == 1) color = vec4(color.xyz * color.w, color.w);
-        if (texType == 2) color = vec4(color.x);
+        if (texType == 1) color = vec4(color.xyz * color.w, color.w); // premultiply non-premultiplied texture
+        if (texType == 2) color = vec4(color.a); // alpha texture
         color *= innerCol;
         color *= strokeAlpha * scissor;
         result = color;
@@ -65,8 +70,8 @@ void main(void) {
     } else if (type == 3) {
         // Textured tris
         vec4 color = texture2D(tex, ftcoord);
-        if (texType == 1) color = vec4(color.xyz * color.w, color.w);
-        if (texType == 2) color = vec4(color.x);
+        if (texType == 1) color = vec4(color.xyz * color.w, color.w); // premultiply non-premultiplied texture
+        if (texType == 2) color = vec4(color.a); // alpha texture
         color *= scissor;
         result = color * innerCol;
     }
