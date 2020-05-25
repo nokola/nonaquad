@@ -1,6 +1,6 @@
 
-# nvg-miniquad
-Vector anti-aliased drawing for Android, WASM, Desktop in Rust.
+# nonaquad
+Vector anti-aliased graphics renderer for Android, WASM, Desktop in Rust, using miniquad.
 
 This library started as a port of [NanoVG](https://github.com/sunli829/nvg/tree/master/nvg-gl) for [miniquad](https://github.com/not-fl3/miniquad). Use this library if you want to draw graphics for a quick experiment (game, paint app, etc.) or if you want to build other libraries on top (e.g. UI library.)
 
@@ -136,6 +136,10 @@ I will use it as a building block for a general purpose cross-platform app frame
 - [ ] high-quality fast drop shadows and blur
 - [ ] gradients - high quality dithered
 - [ ] squircles
+
+# Architecture
+This is how the pieces fit together:
+
 
 # Contributing
 See TODO-s in source code or anything else goes
