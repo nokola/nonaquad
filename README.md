@@ -140,6 +140,7 @@ I will use it as a building block for a general purpose cross-platform app frame
 # Architecture
 This is how the pieces fit together:
 
+![Architecture](img/architecture.png)
 
 # Contributing
 See TODO-s in source code or anything else goes
