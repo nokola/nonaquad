@@ -1,7 +1,7 @@
 use glam::{Mat4, Vec4};
 use miniquad::graphics::Context as MiniContext;
 use miniquad::graphics::*;
-use nvg::renderer::*;
+use nona::renderer::*;
 use slab::Slab;
 
 enum ShaderType {
@@ -1055,30 +1055,30 @@ impl renderer::Renderer for Renderer<'_> {
     }
 }
 
-fn convert_blend_factor(factor: nvg::BlendFactor) -> miniquad::BlendFactor {
+fn convert_blend_factor(factor: nona::BlendFactor) -> miniquad::BlendFactor {
     match factor {
-        nvg::BlendFactor::Zero => miniquad::BlendFactor::Zero,
-        nvg::BlendFactor::One => miniquad::BlendFactor::One,
+        nona::BlendFactor::Zero => miniquad::BlendFactor::Zero,
+        nona::BlendFactor::One => miniquad::BlendFactor::One,
 
-        nvg::BlendFactor::SrcColor => miniquad::BlendFactor::Value(BlendValue::SourceColor),
-        nvg::BlendFactor::OneMinusSrcColor => {
+        nona::BlendFactor::SrcColor => miniquad::BlendFactor::Value(BlendValue::SourceColor),
+        nona::BlendFactor::OneMinusSrcColor => {
             miniquad::BlendFactor::OneMinusValue(BlendValue::SourceColor)
         }
-        nvg::BlendFactor::DstColor => miniquad::BlendFactor::Value(BlendValue::DestinationColor),
-        nvg::BlendFactor::OneMinusDstColor => {
+        nona::BlendFactor::DstColor => miniquad::BlendFactor::Value(BlendValue::DestinationColor),
+        nona::BlendFactor::OneMinusDstColor => {
             miniquad::BlendFactor::OneMinusValue(BlendValue::DestinationColor)
         }
 
-        nvg::BlendFactor::SrcAlpha => miniquad::BlendFactor::Value(BlendValue::SourceAlpha),
-        nvg::BlendFactor::OneMinusSrcAlpha => {
+        nona::BlendFactor::SrcAlpha => miniquad::BlendFactor::Value(BlendValue::SourceAlpha),
+        nona::BlendFactor::OneMinusSrcAlpha => {
             miniquad::BlendFactor::OneMinusValue(BlendValue::SourceAlpha)
         }
-        nvg::BlendFactor::DstAlpha => miniquad::BlendFactor::Value(BlendValue::DestinationAlpha),
-        nvg::BlendFactor::OneMinusDstAlpha => {
+        nona::BlendFactor::DstAlpha => miniquad::BlendFactor::Value(BlendValue::DestinationAlpha),
+        nona::BlendFactor::OneMinusDstAlpha => {
             miniquad::BlendFactor::OneMinusValue(BlendValue::DestinationAlpha)
         }
 
-        nvg::BlendFactor::SrcAlphaSaturate => miniquad::BlendFactor::SourceAlphaSaturate,
+        nona::BlendFactor::SrcAlphaSaturate => miniquad::BlendFactor::SourceAlphaSaturate,
     }
 }
 

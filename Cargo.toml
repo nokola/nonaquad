@@ -5,7 +5,7 @@ authors = ['Nokola <nikolami@outlook.com>']
 edition = '2018'
 
 [dependencies]
-nvg = "0.5.9"
+nona = { path = "../nona" }
 slab = "0.4.2"
 anyhow = "1.0.26"
 glam = {version = "0.8", features = ["scalar-math"] }
