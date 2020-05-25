@@ -771,6 +771,8 @@ impl renderer::Renderer for Renderer<'_> {
         // );
 
         let calls = &self.calls[..];
+        println!("START CALLS");
+
         for call in calls {
             let call: &Call = call; // added to make rust-analyzer type inferrence work. See https://github.com/rust-analyzer/rust-analyzer/issues/4160
             let blend = &call.blend_func;
@@ -790,7 +792,7 @@ impl renderer::Renderer for Renderer<'_> {
             //     blend.dst_alpha,
             // );
 
-            // println!("Call {:?}", call.call_type); // DEBUG
+            println!("Call {:?}", call.call_type); // DEBUG
 
             // update view size for the uniforms that may be in use
             self.uniforms[call.uniform_offset].view_size = self.ctx.screen_size();
