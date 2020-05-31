@@ -1,9 +1,8 @@
 use glam::{Mat4, Vec4};
 use miniquad::graphics::Context as MiniContext;
 use miniquad::graphics::*;
-use nona::renderer::*;
+use nona::{NonaError, renderer::*};
 use slab::Slab;
-use std::error::Error;
 
 enum ShaderType {
     FillGradient,
@@ -144,8 +143,9 @@ const MAX_VERTICES: usize = 21845; // u16.max / 3 due to index buffer limitation
 const MAX_INDICES: usize = u16::max_value() as usize;
 
 impl<'a> Renderer<'a> {
-    pub fn create(ctx: &mut MiniContext) -> anyhow::Result<Renderer> {
-        let shader = Shader::new(ctx, shader::VERTEX, shader::FRAGMENT, shader::META)?;
+    pub fn create(ctx: &mut MiniContext) -> Result<Renderer, NonaError> {
+        let shader = Shader::new(ctx, shader::VERTEX, shader::FRAGMENT, shader::META)
+            .map_err(|error| NonaError::Shader(error.to_string()))?;
         let pipeline = Pipeline::with_params(
             ctx,
             &[BufferLayout::default()],
@@ -614,7 +614,7 @@ impl renderer::Renderer for Renderer<'_> {
         height: usize,
         flags: ImageFlags,
         data: Option<&[u8]>,
-    ) -> anyhow::Result<ImageId> {
+    ) -> Result<ImageId, NonaError> {
         let format = match texture_type {
             TextureType::RGBA => TextureFormat::RGBA8,
             TextureType::Alpha => TextureFormat::Alpha,
@@ -642,13 +642,13 @@ impl renderer::Renderer for Renderer<'_> {
         Ok(id)
     }
 
-    fn delete_texture(&mut self, img: ImageId) -> anyhow::Result<()> {
+    fn delete_texture(&mut self, img: ImageId) -> Result<(), NonaError> {
         if let Some(texture) = self.textures.get(img) {
             texture.tex.delete();
             self.textures.remove(img);
             Ok(())
         } else {
-            bail!("texture '{}' not found", img);
+            Err(NonaError::Texture(format!("texture '{}' not found", img)))
         }
     }
 
@@ -660,7 +660,7 @@ impl renderer::Renderer for Renderer<'_> {
         width: usize,
         height: usize,
         data: &[u8],
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), NonaError> {
         if let Some(texture) = self.textures.get(img) {
             texture.tex.update_texture_part(
                 self.ctx,
@@ -672,32 +672,24 @@ impl renderer::Renderer for Renderer<'_> {
             );
             Ok(())
         } else {
-            bail!("texture '{}' not found", img);
+            Err(NonaError::Texture(format!("texture '{}' not found", img)))
         }
     }
 
-    fn texture_size(&self, img: ImageId) -> anyhow::Result<(usize, usize)> {
+    fn texture_size(&self, img: ImageId) -> Result<(usize, usize), NonaError> {
         if let Some(texture) = self.textures.get(img) {
             Ok((texture.tex.width as usize, texture.tex.height as usize))
         } else {
-            bail!("texture '{}' not found", img);
+            Err(NonaError::Texture(format!("texture '{}' not found", img)))
         }
     }
 
-    fn viewport(&mut self, extent: Extent, _device_pixel_ratio: f32) -> anyhow::Result<()> {
+    fn viewport(&mut self, extent: Extent, _device_pixel_ratio: f32) -> Result<(), NonaError> {
         self.view = extent;
         Ok(())
     }
 
-    fn cancel(&mut self) -> anyhow::Result<()> {
-        self.vertexes.clear();
-        self.paths.clear();
-        self.calls.clear();
-        self.uniforms.clear();
-        Ok(())
-    }
-
-    fn flush(&mut self) -> anyhow::Result<()> {
+    fn flush(&mut self) -> Result<(), NonaError> {
         if self.calls.is_empty() {
             self.vertexes.clear();
             self.paths.clear();
@@ -903,7 +895,7 @@ impl renderer::Renderer for Renderer<'_> {
         fringe: f32,
         bounds: Bounds,
         paths: &[Path],
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), NonaError> {
         let mut call = Call {
             call_type: CallType::Fill,
             image: paint.image,
@@ -982,7 +974,7 @@ impl renderer::Renderer for Renderer<'_> {
         fringe: f32,
         stroke_width: f32,
         paths: &[Path],
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), NonaError> {
         let mut call = Call {
             call_type: CallType::Stroke,
             image: paint.image,
@@ -1033,7 +1025,7 @@ impl renderer::Renderer for Renderer<'_> {
         composite_operation: CompositeOperationState,
         scissor: &Scissor,
         vertexes: &[Vertex],
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), NonaError> {
         let call = Call {
             call_type: CallType::Triangles,
             image: paint.image,
