@@ -13,9 +13,9 @@ glam = {version = "0.8", features = ["scalar-math"] }
 # color-backtrace = { version = "0.3" }
 
 [dependencies.miniquad]
-# path = '..\miniquad-nokola'
-git = "https://github.com/not-fl3/miniquad"
-rev = "ac6025ad2bbf58e6ae56d87c7c880a2b0577d9d7"
+path = '..\miniquad'
+# version = "0.3.0-alpha.7"
+# git = "https://github.com/not-fl3/miniquad"
 
 # Uncomment for small builds
 [profile.release]

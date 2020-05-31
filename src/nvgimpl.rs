@@ -3,6 +3,7 @@ use miniquad::graphics::Context as MiniContext;
 use miniquad::graphics::*;
 use nona::renderer::*;
 use slab::Slab;
+use std::error::Error;
 
 enum ShaderType {
     FillGradient,
@@ -144,7 +145,7 @@ const MAX_INDICES: usize = u16::max_value() as usize;
 
 impl<'a> Renderer<'a> {
     pub fn create(ctx: &mut MiniContext) -> anyhow::Result<Renderer> {
-        let shader = Shader::new(ctx, shader::VERTEX, shader::FRAGMENT, shader::META);
+        let shader = Shader::new(ctx, shader::VERTEX, shader::FRAGMENT, shader::META)?;
         let pipeline = Pipeline::with_params(
             ctx,
             &[BufferLayout::default()],
@@ -624,7 +625,7 @@ impl renderer::Renderer for Renderer<'_> {
             data,
             TextureParams {
                 format,
-                wrap: TextureWrap::Clamp,     // TODO: support repeatx/y/mirror
+                wrap: TextureWrap::Clamp, // TODO: support repeatx/y/mirror
                 filter: if flags.contains(ImageFlags::NEAREST) {
                     FilterMode::Nearest
                 } else {
@@ -637,10 +638,7 @@ impl renderer::Renderer for Renderer<'_> {
 
         // TODO: support ImageFlags::GENERATE_MIPMAPS) with/without if flags.contains(ImageFlags::NEAREST) {
 
-        let id = self.textures.insert(Texture {
-            tex,
-            flags,
-        });
+        let id = self.textures.insert(Texture { tex, flags });
         Ok(id)
     }
 
