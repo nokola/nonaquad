@@ -37,7 +37,8 @@ impl<'a> EventHandlerFree for Stage<'a> {
         nona.begin_frame().unwrap();
 
         nona.begin_path();
-        nona.rect((100.0, 100.0, 400.0, 300.0));
+        // nona.rect((100.0, 100.0, 400.0, 300.0));
+        nona.rounded_rect((100.0, 100.0, 400.0, 300.0), 10.0);
         nona.fill_paint(nona::Gradient::Linear {
             start: (100, 100).into(),
             end: (400, 400).into(),
