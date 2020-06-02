@@ -1,7 +1,7 @@
 use glam::{Mat4, Vec4};
 use miniquad::graphics::Context as MiniContext;
 use miniquad::graphics::*;
-use nona::{NonaError, renderer::*};
+use nona::{renderer::*, NonaError};
 use slab::Slab;
 
 enum ShaderType {
@@ -605,6 +605,14 @@ impl IntoTuple4<f32> for Color {
 impl renderer::Renderer for Renderer<'_> {
     fn edge_antialias(&self) -> bool {
         true
+    }
+
+    fn view_size(&self) -> (f32, f32) {
+        self.ctx.screen_size()
+    }
+
+    fn device_pixel_ratio(&self) -> f32 {
+        self.ctx.dpi_scale()
     }
 
     fn create_texture(
