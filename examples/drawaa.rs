@@ -35,6 +35,7 @@ impl<'a> EventHandlerFree for Stage<'a> {
         nona.attach_renderer(self.renderer.take());
 
         nona.begin_frame().unwrap();
+
         nona.begin_path();
         nona.rect((100.0, 100.0, 400.0, 300.0));
         nona.fill_paint(nona::Gradient::Linear {
@@ -45,16 +46,15 @@ impl<'a> EventHandlerFree for Stage<'a> {
         });
         nona.fill().unwrap();
 
-        nona.fill_paint(nona::Color::rgb(1.0, 1.0, 1.0));
+        nona.begin_path();
         nona.font("roboto");
         nona.font_size(40.0);
-        nona.begin_path();
         nona.text_align(nona::Align::TOP | nona::Align::LEFT);
+        nona.fill_paint(nona::Color::rgb(1.0, 1.0, 1.0));
         nona.text((10, 10), format!("alpha texture font - working!!!"))
             .unwrap();
-        nona.fill().unwrap();
 
-        nona.save();
+        // nona.save();
         // nona.global_composite_operation(nona::CompositeOperation::Basic(nona::BasicCompositeOperation::Lighter));
         let origin = (150.0, 140.0);
         nona.begin_path();
@@ -69,7 +69,7 @@ impl<'a> EventHandlerFree for Stage<'a> {
         nona.stroke_paint(nona::Color::rgba(1.0, 1.0, 0.0, 1.0));
         nona.stroke_width(3.0);
         nona.stroke().unwrap();
-        nona.restore();
+        // nona.restore();
 
         nona.end_frame().unwrap();
 
