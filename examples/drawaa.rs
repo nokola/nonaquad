@@ -32,7 +32,9 @@ impl<'a> EventHandlerFree for Stage<'a> {
         // let ctx = get_context();
 
         let nona = &mut self.nona;
-        nona.attach_renderer(self.renderer.take().unwrap()).unwrap();
+        nona.attach_renderer(self.renderer.take());
+
+        nona.begin_frame().unwrap();
         nona.begin_path();
         nona.rect((100.0, 100.0, 400.0, 300.0));
         nona.fill_paint(nona::Gradient::Linear {
@@ -69,7 +71,9 @@ impl<'a> EventHandlerFree for Stage<'a> {
         nona.stroke().unwrap();
         nona.restore();
 
-        self.renderer = Some(nona.detach_renderer().unwrap());
+        nona.end_frame().unwrap();
+
+        self.renderer = nona.detach_renderer();
     }
 }
 
