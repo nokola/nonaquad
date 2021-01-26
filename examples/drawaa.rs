@@ -1,5 +1,6 @@
 use miniquad::*;
 use nvg_miniquad::nvgimpl;
+use nona::widgets::{Widget, Button};
 // use nvg_miniquad::nvgimpl_orig as nvgimpl;
 
 struct Stage<'a> {
@@ -38,7 +39,7 @@ impl<'a> EventHandlerFree for Stage<'a> {
 
         nona.begin_path();
         // nona.rect((100.0, 100.0, 400.0, 300.0));
-        nona.rounded_rect((100.0, 100.0, 400.0, 300.0), 10.0);
+        nona.rounded_rect((100.0, 100.0, 400.0, 300.0), 30.0);
         nona.fill_paint(nona::Gradient::Linear {
             start: (100, 100).into(),
             end: (400, 400).into(),
@@ -57,20 +58,30 @@ impl<'a> EventHandlerFree for Stage<'a> {
 
         // nona.save();
         // nona.global_composite_operation(nona::CompositeOperation::Basic(nona::BasicCompositeOperation::Lighter));
-        let origin = (150.0, 140.0);
-        nona.begin_path();
-        nona.circle(origin, 64.0);
-        nona.move_to(origin);
-        nona.line_join(nona::LineJoin::Round);
-        nona.line_to((origin.0 + 300.0, origin.1 - 50.0));
-        nona.quad_to((300.0, 100.0), (origin.0 + 500.0, origin.1 + 100.0));
-        nona.close_path();
-        nona.fill_paint(nona::Color::rgba(0.2, 0.0, 0.8, 1.0));
-        nona.fill().unwrap();
-        nona.stroke_paint(nona::Color::rgba(1.0, 1.0, 0.0, 1.0));
-        nona.stroke_width(3.0);
-        nona.stroke().unwrap();
+        // let origin = (150.0, 140.0);
+        // nona.begin_path();
+        // nona.circle(origin, 64.0);
+        // nona.move_to(origin);
+        // nona.line_join(nona::LineJoin::Round);
+        // nona.line_to((origin.0 + 300.0, origin.1 - 50.0));
+        // nona.quad_to((300.0, 100.0), (origin.0 + 500.0, origin.1 + 100.0));
+        // nona.close_path();
+        // nona.fill_paint(nona::Color::rgba(0.2, 0.0, 0.8, 1.0));
+        // nona.fill().unwrap();
+        // nona.stroke_paint(nona::Color::rgba(1.0, 1.0, 0.0, 1.0));
+        // nona.stroke_width(3.0);
+        // nona.stroke().unwrap();
         // nona.restore();
+
+        let btn = Button {
+            widget: Widget {
+                width: 120.0,
+                height: 40.0,
+                ..Default::default()
+            }
+        };
+
+        btn.draw(nona).unwrap();
 
         nona.end_frame().unwrap();
 
