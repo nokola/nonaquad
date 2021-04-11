@@ -97,27 +97,29 @@ mod shader {
         VertexAttribute::new("vertex", VertexFormat::Float2),
         VertexAttribute::new("tcoord", VertexFormat::Float2),
     ];
-    pub const META: ShaderMeta = ShaderMeta {
-        images: &["tex"],
-        uniforms: UniformBlockLayout {
-            uniforms: &[
-                UniformDesc::new("viewSize", UniformType::Float2),
-                UniformDesc::new("scissorMat", UniformType::Mat4),
-                UniformDesc::new("paintMat", UniformType::Mat4),
-                UniformDesc::new("innerCol", UniformType::Float4),
-                UniformDesc::new("outerCol", UniformType::Float4),
-                UniformDesc::new("scissorExt", UniformType::Float2),
-                UniformDesc::new("scissorScale", UniformType::Float2),
-                UniformDesc::new("extent", UniformType::Float2),
-                UniformDesc::new("radius", UniformType::Float1),
-                UniformDesc::new("feather", UniformType::Float1),
-                UniformDesc::new("strokeMult", UniformType::Float1),
-                UniformDesc::new("strokeThr", UniformType::Float1),
-                UniformDesc::new("texType", UniformType::Int1),
-                UniformDesc::new("type", UniformType::Int1),
-            ],
-        },
-    };
+    pub fn meta() -> ShaderMeta {
+        ShaderMeta {
+            images: vec!["tex".to_string()],
+            uniforms: UniformBlockLayout {
+                uniforms: vec![
+                    UniformDesc::new("viewSize", UniformType::Float2),
+                    UniformDesc::new("scissorMat", UniformType::Mat4),
+                    UniformDesc::new("paintMat", UniformType::Mat4),
+                    UniformDesc::new("innerCol", UniformType::Float4),
+                    UniformDesc::new("outerCol", UniformType::Float4),
+                    UniformDesc::new("scissorExt", UniformType::Float2),
+                    UniformDesc::new("scissorScale", UniformType::Float2),
+                    UniformDesc::new("extent", UniformType::Float2),
+                    UniformDesc::new("radius", UniformType::Float1),
+                    UniformDesc::new("feather", UniformType::Float1),
+                    UniformDesc::new("strokeMult", UniformType::Float1),
+                    UniformDesc::new("strokeThr", UniformType::Float1),
+                    UniformDesc::new("texType", UniformType::Int1),
+                    UniformDesc::new("type", UniformType::Int1),
+                ],
+            },
+        }
+    }
 
     #[derive(Default)]
     #[repr(C)]
@@ -144,7 +146,7 @@ const MAX_INDICES: usize = u16::max_value() as usize;
 
 impl<'a> Renderer<'a> {
     pub fn create(ctx: &mut MiniContext) -> Result<Renderer, NonaError> {
-        let shader = Shader::new(ctx, shader::VERTEX, shader::FRAGMENT, shader::META)
+        let shader = Shader::new(ctx, shader::VERTEX, shader::FRAGMENT, shader::meta())
             .map_err(|error| NonaError::Shader(error.to_string()))?;
         let pipeline = Pipeline::with_params(
             ctx,
