@@ -8,7 +8,7 @@ edition = '2018'
 nona = { path = "../nona" }
 slab = "0.4.2"
 anyhow = "1.0.26"
-glam = {version = "0.8", features = ["scalar-math"] }
+glam = {version = "0.14.0", features = ["scalar-math"] }
 # note: color-backtrace does not work for wasm32-unknown-unknown due to memmap dependency
 # color-backtrace = { version = "0.3" }
 
