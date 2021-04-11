@@ -56,6 +56,29 @@ impl<'a> EventHandlerFree for Stage<'a> {
         nona.text((10, 10), format!("alpha texture font - working!!!"))
             .unwrap();
 
+        // nona.begin_path();
+        // nona.rect((100.0, 100.0, 300.0, 300.0));
+        // nona.fill_paint(nona::Gradient::Linear {
+        //     start: (100, 100).into(),
+        //     end: (400, 400).into(),
+        //     start_color: nona::Color::rgb_i(0xAA, 0x6C, 0x39),
+        //     end_color: nona::Color::rgb_i(0x88, 0x2D, 0x60),
+        // });
+        // nona.fill().unwrap();
+
+        let origin = (150.0, 140.0);
+        nona.begin_path();
+        nona.circle(origin, 64.0);
+        nona.move_to(origin);
+        nona
+            .line_to((origin.0 + 300.0, origin.1 - 50.0));
+        nona
+            .stroke_paint(nona::Color::rgba(1.0, 1.0, 0.0, 1.0));
+        nona.stroke_width(3.0);
+        nona.stroke().unwrap();
+
+        nona.end_frame().unwrap();
+
         // nona.save();
         // nona.global_composite_operation(nona::CompositeOperation::Basic(nona::BasicCompositeOperation::Lighter));
         // let origin = (150.0, 140.0);

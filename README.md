@@ -29,26 +29,26 @@ This library started as a port of [NanoVG](https://github.com/sunli829/nvg/tree/
 # Example
 
 ```rust
-self.nvg_context.begin_path();
-self.nvg_context.rect((100.0, 100.0, 300.0, 300.0));
-self.nvg_context.fill_paint(nvg::Gradient::Linear {
+nona.begin_path();
+nona.rect((100.0, 100.0, 300.0, 300.0));
+nona.fill_paint(nona::Gradient::Linear {
     start: (100, 100).into(),
     end: (400, 400).into(),
-    start_color: nvg::Color::rgb_i(0xAA, 0x6C, 0x39),
-    end_color: nvg::Color::rgb_i(0x88, 0x2D, 0x60),
+    start_color: nona::Color::rgb_i(0xAA, 0x6C, 0x39),
+    end_color: nona::Color::rgb_i(0x88, 0x2D, 0x60),
 });
-self.nvg_context.fill().unwrap();
+nona.fill().unwrap();
 
 let origin = (150.0, 140.0);
-self.nvg_context.begin_path();
-self.nvg_context.circle(origin, 64.0);
-self.nvg_context.move_to(origin);
-self.nvg_context.line_to((origin.0 + 300.0, origin.1 - 50.0));
-self.nvg_context.stroke_paint(nvg::Color::rgba(1.0, 1.0, 0.0, 1.0));
-self.nvg_context.stroke_width(3.0);
-self.nvg_context.stroke().unwrap();
+nona.begin_path();
+nona.circle(origin, 64.0);
+nona.move_to(origin);
+nona.line_to((origin.0 + 300.0, origin.1 - 50.0));
+nona.stroke_paint(nona::Color::rgba(1.0, 1.0, 0.0, 1.0));
+nona.stroke_width(3.0);
+nona.stroke().unwrap();
 
-self.nvg_context.end_frame().unwrap();
+nona.end_frame().unwrap();
 ```
 
 # Screenshots
