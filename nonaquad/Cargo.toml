@@ -10,7 +10,7 @@ version = '0.1.0'
 # documentation = "TODO, leave empty for default docs.rs"
 categories = ["graphics", "rendering"]
 keywords = ["gamedev", "graphics", "antialiased", "UI", "cross-platform"]
-readme = "README.md"
+readme = "..\README.md"
 
 [dependencies]
 anyhow = "1.0.26"
