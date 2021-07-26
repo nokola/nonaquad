@@ -638,7 +638,7 @@ impl<'a, R: Renderer> Context<R> {
             .expect("Call attach_renderer to attach renderer first!");
         let img = image::load_from_memory(data.as_ref())
             .map_err(|err| NonaError::Texture(err.to_string()))?;
-        let img = img.to_rgba();
+        let img = img.to_rgba8();
         let dimensions = img.dimensions();
         let img = renderer.create_texture(
             TextureType::RGBA,
