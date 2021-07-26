@@ -14,7 +14,7 @@ glam = {version = "0.14.0", features = ["scalar-math"] }
 
 [dependencies.miniquad]
 # path = '..\miniquad'
-version = "0.3.0-alpha.29"
+version = "0.3.0-alpha.37"
 # git = "https://github.com/not-fl3/miniquad"
 
 # Uncomment for small builds

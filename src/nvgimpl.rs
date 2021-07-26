@@ -699,6 +699,11 @@ impl renderer::Renderer for Renderer<'_> {
         Ok(())
     }
 
+    fn clear_screen(&mut self, color: Color) {
+        self.ctx
+            .clear(Some((color.r, color.g, color.b, color.a)), None, None);
+    }
+
     fn flush(&mut self) -> Result<(), NonaError> {
         if self.calls.is_empty() {
             self.vertexes.clear();
@@ -708,11 +713,7 @@ impl renderer::Renderer for Renderer<'_> {
 
             return Ok(());
         }
-        self.ctx.begin_default_pass(PassAction::Clear {
-            color: Some((0.5, 0.5, 1.0, 1.0)),
-            depth: None,
-            stencil: None,
-        });
+        self.ctx.begin_default_pass(PassAction::Nothing);
 
         // glUseProgram(self.shader.prog); DONE
         self.ctx.apply_pipeline(&self.pipeline);
@@ -771,7 +772,7 @@ impl renderer::Renderer for Renderer<'_> {
         // );
 
         let calls = &self.calls[..];
-        println!("START CALLS");
+        // println!("START CALLS"); // DEBUG
 
         for call in calls {
             let call: &Call = call; // added to make rust-analyzer type inferrence work. See https://github.com/rust-analyzer/rust-analyzer/issues/4160
@@ -792,7 +793,7 @@ impl renderer::Renderer for Renderer<'_> {
             //     blend.dst_alpha,
             // );
 
-            println!("Call {:?}", call.call_type); // DEBUG
+            // println!("Call {:?}", call.call_type); // DEBUG
 
             // update view size for the uniforms that may be in use
             self.uniforms[call.uniform_offset].view_size = self.ctx.screen_size();
@@ -906,8 +907,29 @@ impl renderer::Renderer for Renderer<'_> {
         bounds: Bounds,
         paths: &[Path],
     ) -> Result<(), NonaError> {
+        let mut new_vertex_count = self.vertexes.len();
+        for path in paths {
+            new_vertex_count += path.get_fill().len();
+            new_vertex_count += path.get_stroke().len();
+        }
+
+        let call_type = if paths.len() == 1 && paths[0].convex {
+            CallType::ConvexFill
+        } else {
+            CallType::Fill
+        };
+
+        if call_type == CallType::Fill {
+            new_vertex_count += 4;
+        }
+
+        // if GPU overflow
+        if new_vertex_count >= MAX_VERTICES {
+            self.flush()?;
+        }
+
         let mut call = Call {
-            call_type: CallType::Fill,
+            call_type,
             image: paint.image,
             path_offset: self.paths.len(),
             path_count: paths.len(),
@@ -916,10 +938,6 @@ impl renderer::Renderer for Renderer<'_> {
             uniform_offset: 0,
             blend_func: composite_operation.into(),
         };
-
-        if paths.len() == 1 && paths[0].convex {
-            call.call_type = CallType::ConvexFill;
-        }
 
         let mut offset = self.vertexes.len();
         for path in paths {
@@ -985,6 +1003,16 @@ impl renderer::Renderer for Renderer<'_> {
         stroke_width: f32,
         paths: &[Path],
     ) -> Result<(), NonaError> {
+        let mut new_vertex_count = self.vertexes.len();
+        for path in paths {
+            new_vertex_count += path.get_stroke().len();
+        }
+
+        // if GPU overflow
+        if new_vertex_count >= MAX_VERTICES {
+            self.flush()?;
+        }
+
         let mut call = Call {
             call_type: CallType::Stroke,
             image: paint.image,
@@ -1036,6 +1064,14 @@ impl renderer::Renderer for Renderer<'_> {
         scissor: &Scissor,
         vertexes: &[Vertex],
     ) -> Result<(), NonaError> {
+        let mut new_vertex_count = self.vertexes.len();
+        new_vertex_count += vertexes.len();
+
+        // if GPU overflow
+        if new_vertex_count >= MAX_VERTICES {
+            self.flush()?;
+        }
+
         let call = Call {
             call_type: CallType::Triangles,
             image: paint.image,

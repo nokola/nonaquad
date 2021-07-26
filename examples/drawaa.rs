@@ -1,4 +1,5 @@
 use miniquad::*;
+use nona::{Align, Color, Gradient, Paint, Point};
 use nvg_miniquad::nvgimpl;
 // use nona::widgets::{Widget, Button};
 // use nvg_miniquad::nvgimpl_orig as nvgimpl;
@@ -35,24 +36,34 @@ impl<'a> EventHandlerFree for Stage<'a> {
         let nona = &mut self.nona;
         nona.attach_renderer(self.renderer.take());
 
-        nona.begin_frame().unwrap();
+        nona.begin_frame(Some(Color::rgb_i(128, 128, 255))).unwrap();
+
+        // uncomment to draw a lot of circles - more than maximum GPU vertices on openGL ES 2/WebGL
+        // note: performance is currently low, very CPU-bound. Something to fix in the future.
+        // for i in 0..405 {
+        //     nona.begin_path();
+        //     // nona.rect((100.0, 100.0, 400.0, 300.0));
+        //     nona.circle(Point::new(i as f32, 110.), 32.);
+        //     nona.fill_paint(Paint::from(Color::rgb_i(255, (i as u32 % 256 as u32) as u8, 0)));
+        //     nona.fill().unwrap();
+        // }
 
         nona.begin_path();
         // nona.rect((100.0, 100.0, 400.0, 300.0));
         nona.rounded_rect((100.0, 100.0, 400.0, 300.0), 30.0);
-        nona.fill_paint(nona::Gradient::Linear {
+        nona.fill_paint(Gradient::Linear {
             start: (100, 100).into(),
             end: (400, 400).into(),
-            start_color: nona::Color::rgb_i(0xAA, 0x6C, 0x39),
-            end_color: nona::Color::rgb_i(0x88, 0x2D, 0x60),
+            start_color: Color::rgb_i(0xAA, 0x6C, 0x39),
+            end_color: Color::rgb_i(0x88, 0x2D, 0x60),
         });
         nona.fill().unwrap();
 
         nona.begin_path();
         nona.font("roboto");
         nona.font_size(40.0);
-        nona.text_align(nona::Align::TOP | nona::Align::LEFT);
-        nona.fill_paint(nona::Color::rgb(1.0, 1.0, 1.0));
+        nona.text_align(Align::TOP | Align::LEFT);
+        nona.fill_paint(Color::rgb(1.0, 1.0, 1.0));
         nona.text((10, 10), format!("alpha texture font - working!!!"))
             .unwrap();
 
@@ -73,7 +84,7 @@ impl<'a> EventHandlerFree for Stage<'a> {
         nona
             .line_to((origin.0 + 300.0, origin.1 - 50.0));
         nona
-            .stroke_paint(nona::Color::rgba(1.0, 1.0, 0.0, 1.0));
+            .stroke_paint(Color::rgba(1.0, 1.0, 0.0, 1.0));
         nona.stroke_width(3.0);
         nona.stroke().unwrap();
 
