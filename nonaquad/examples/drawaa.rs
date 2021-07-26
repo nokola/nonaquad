@@ -18,8 +18,14 @@ impl<'a> Stage<'a> {
     pub fn new() -> Stage<'a> {
         let mut renderer = nvgimpl::Renderer::create(get_context()).unwrap();
         let mut nona = nona::Context::create(&mut renderer).unwrap();
-        nona.create_font_from_file("roboto", "examples/Roboto-Bold.ttf")
-            .unwrap();
+
+        // for demo: load font by embedding into binary
+        let font_data: &'static [u8] = include_bytes!("Roboto-Bold.ttf");
+        nona.create_font("roboto", font_data).unwrap();
+
+        // use this to load fonts dynamically at runtime:
+        // nona.create_font_from_file("roboto", "examples/Roboto-Bold.ttf")
+        //     .unwrap();
         Stage {
             renderer: Some(renderer),
             nona,
@@ -81,10 +87,8 @@ impl<'a> EventHandlerFree for Stage<'a> {
         nona.begin_path();
         nona.circle(origin, 64.0);
         nona.move_to(origin);
-        nona
-            .line_to((origin.0 + 300.0, origin.1 - 50.0));
-        nona
-            .stroke_paint(Color::rgba(1.0, 1.0, 0.0, 1.0));
+        nona.line_to((origin.0 + 300.0, origin.1 - 50.0));
+        nona.stroke_paint(Color::rgba(1.0, 1.0, 0.0, 1.0));
         nona.stroke_width(3.0);
         nona.stroke().unwrap();
 

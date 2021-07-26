@@ -28,6 +28,9 @@ This library started as a port of [NanoVG](https://github.com/sunli829/nvg/tree/
 
 # Example
 
+Located in [nonaquad/examples](nonaquad/examples).
+
+Start with: `cargo run --example drawaa`
 ```rust
 nona.begin_path();
 nona.rect((100.0, 100.0, 300.0, 300.0));

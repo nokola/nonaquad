@@ -1,0 +1,19 @@
+[package]
+authors = ["Nokola"]
+description = "Pure Rust antialiasing graphics library"
+edition = "2018"
+homepage = "https://github.com/nokola/nona"
+keywords = ["graphics", "vector", "2d"]
+license = "MIT"
+name = "nona"
+publish = true
+repository = "https://github.com/nokola/nona"
+version = "0.1.0"
+
+[dependencies]
+bitflags = "1.2.1"
+clamped = "1.0.0"
+image = "0.23.8"
+rusttype = {version = "0.9.2", features = ["gpu_cache"]}
+slab = "0.4.2"
+thiserror = "1.0.20"
