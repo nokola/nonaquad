@@ -7,16 +7,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in library 'nvg_miniquad'",
+            "name": "Debug unit tests in library 'nonaquad'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
                     "--lib",
-                    "--package=nvg_miniquad"
+                    "--package=nonaquad"
                 ],
                 "filter": {
-                    "name": "nvg_miniquad",
+                    "name": "nonaquad",
                     "kind": "lib"
                 }
             },
@@ -31,7 +31,7 @@
                 "args": [
                     "build",
                     "--example=drawaa",
-                    "--package=nvg_miniquad"
+                    "--package=nonaquad"
                 ],
                 "filter": {
                     "name": "drawaa",
@@ -50,7 +50,7 @@
                     "test",
                     "--no-run",
                     "--example=drawaa",
-                    "--package=nvg_miniquad"
+                    "--package=nonaquad"
                 ],
                 "filter": {
                     "name": "drawaa",

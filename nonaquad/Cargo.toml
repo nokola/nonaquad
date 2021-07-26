@@ -1,14 +1,22 @@
 [package]
-name = 'nvg_miniquad'
-version = '0.1.0'
-authors = ['Nokola <nikolami@outlook.com>']
+authors = ['Nokola']
+description = "Vector anti-aliased graphics renderer for Android, WebGL, iOS, Windows, Linux, and Mac using miniquad."
 edition = '2018'
+homepage = "https://github.com/nokola/nonaquad/"
+license = "MIT OR Apache-2.0"
+name = 'nonaquad'
+repository = "https://github.com/nokola/nonaquad/"
+version = '0.1.0'
+# documentation = "TODO, leave empty for default docs.rs"
+categories = ["graphics", "rendering"]
+keywords = ["gamedev", "graphics", "antialiased", "UI", "cross-platform"]
+readme = "README.md"
 
 [dependencies]
-nona = { path = "../nona" }
-slab = "0.4.2"
 anyhow = "1.0.26"
-glam = {version = "0.14.0", features = ["scalar-math"] }
+glam = {version = "0.17.3", features = ["scalar-math"]}
+nona = {path = "../nona"}
+slab = "0.4.2"
 # note: color-backtrace does not work for wasm32-unknown-unknown due to memmap dependency
 # color-backtrace = { version = "0.3" }
 
@@ -24,7 +32,7 @@ lto = "thin"
 [package.metadata.android]
 # Specifies the array of targets to build for.
 # Defaults to "armv7-linux-androideabi", "aarch64-linux-android", "i686-linux-android".
-build_targets = [ "armv7-linux-androideabi" ]
+build_targets = ["armv7-linux-androideabi"]
 fullscreen = true
 opengles_version_major = 2
 opengles_version_minor = 0

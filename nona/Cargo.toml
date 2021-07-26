@@ -2,13 +2,16 @@
 authors = ["Nokola"]
 description = "Pure Rust antialiasing graphics library"
 edition = "2018"
-homepage = "https://github.com/nokola/nona"
+homepage = "https://github.com/nokola/nonaquad/tree/master/nona"
 keywords = ["graphics", "vector", "2d"]
-license = "MIT"
+license = "MIT OR Apache-2.0"
 name = "nona"
 publish = true
-repository = "https://github.com/nokola/nona"
+repository = "https://github.com/nokola/nonaquad/tree/master/nona"
 version = "0.1.0"
+# documentation = "TODO, leave empty for default docs.rs"
+categories = ["graphics", "rendering"]
+readme = "README.md"
 
 [dependencies]
 bitflags = "1.2.1"

@@ -1,8 +1,8 @@
 use miniquad::*;
 use nona::{Align, Color, Gradient, Paint, Point};
-use nvg_miniquad::nvgimpl;
+use nonaquad::nvgimpl;
 // use nona::widgets::{Widget, Button};
-// use nvg_miniquad::nvgimpl_orig as nvgimpl;
+// use nonaquad::nvgimpl_orig as nvgimpl;
 
 struct Stage<'a> {
     renderer: Option<nvgimpl::Renderer<'a>>,
