@@ -15,7 +15,7 @@ readme = "README.md"
 [dependencies]
 anyhow = "1.0.26"
 glam = {version = "0.17.3", features = ["scalar-math"]}
-nona = {path = "../nona"}
+nona = {path = "../nona", version = "0.1.0"}
 slab = "0.4.2"
 # note: color-backtrace does not work for wasm32-unknown-unknown due to memmap dependency
 # color-backtrace = { version = "0.3" }
