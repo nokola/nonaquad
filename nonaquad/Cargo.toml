@@ -6,7 +6,7 @@ homepage = "https://github.com/nokola/nonaquad/"
 license = "MIT OR Apache-2.0"
 name = 'nonaquad'
 repository = "https://github.com/nokola/nonaquad/"
-version = '0.1.0'
+version = '0.1.1'
 # documentation = "TODO, leave empty for default docs.rs"
 categories = ["graphics", "rendering"]
 keywords = ["gamedev", "graphics", "antialiased", "UI", "cross-platform"]
@@ -15,7 +15,7 @@ readme = "../README.md"
 [dependencies]
 anyhow = "1.0.26"
 glam = {version = "0.17.3", features = ["scalar-math"]}
-nona = {path = "../nona", version = "0.1.0"}
+nona = {path = "../nona", version = "0.1.1"}
 slab = "0.4.2"
 # note: color-backtrace does not work for wasm32-unknown-unknown due to memmap dependency
 # color-backtrace = { version = "0.3" }
