@@ -91,9 +91,12 @@ pub struct RendererCtx<'a> {
     ctx: &'a mut MiniContext,
 }
 
-impl<'a> RendererCtx<'a> {
-    pub fn new(renderer: &'a mut Renderer, ctx: &'a mut MiniContext) -> Self {
-        RendererCtx { renderer, ctx }
+impl Renderer {
+    pub fn with_context<'a>(&'a mut self, ctx: &'a mut MiniContext) -> RendererCtx<'a> {
+        RendererCtx {
+            renderer: self,
+            ctx,
+        }
     }
 }
 

@@ -12,8 +12,7 @@ struct Stage {
 impl Stage {
     pub fn new(ctx: &mut Context) -> Stage {
         let mut renderer = nvgimpl::Renderer::create(ctx).unwrap();
-        let mut nona =
-            nona::Context::create(&mut nvgimpl::RendererCtx::new(&mut renderer, ctx)).unwrap();
+        let mut nona = nona::Context::create(&mut renderer.with_context(ctx)).unwrap();
 
         // for demo: load font by embedding into binary
         let font_data: &'static [u8] = include_bytes!("Roboto-Bold.ttf");
@@ -32,9 +31,8 @@ impl EventHandler for Stage {
     fn draw(&mut self, ctx: &mut Context) {
         // let ctx = get_context();
 
-        self.nona.attach_renderer(
-            &mut nvgimpl::RendererCtx::new(&mut self.renderer, ctx),
-            |canvas| {
+        self.nona
+            .attach_renderer(&mut self.renderer.with_context(ctx), |canvas| {
                 canvas
                     .begin_frame(Some(Color::rgb_i(128, 128, 255)))
                     .unwrap();
@@ -89,8 +87,7 @@ impl EventHandler for Stage {
                 canvas.stroke().unwrap();
 
                 canvas.end_frame().unwrap();
-            },
-        );
+            });
 
         ctx.commit_frame();
     }
