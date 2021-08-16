@@ -91,6 +91,8 @@ impl EventHandler for Stage {
                 canvas.end_frame().unwrap();
             },
         );
+
+        ctx.commit_frame();
     }
 }
 

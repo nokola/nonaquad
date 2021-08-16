@@ -992,7 +992,6 @@ impl Renderer {
         }
 
         ctx.end_render_pass();
-        ctx.commit_frame();
 
         // TODO: commented, not needed??
         // glDisableVertexAttribArray(self.shader.loc_vertex);
