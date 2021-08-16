@@ -4,6 +4,7 @@ use crate::renderer::{Renderer, Scissor, TextureType};
 use crate::{Color, Extent, NonaError, Point, Rect, Transform};
 use clamped::Clamp;
 use std::f32::consts::PI;
+use std::ops::Deref;
 
 pub type ImageId = usize;
 
@@ -444,8 +445,7 @@ pub(crate) enum Command {
     Solidity(Solidity),
 }
 
-pub struct Context<R: Renderer> {
-    renderer: Option<R>,
+pub struct Context {
     commands: Vec<Command>,
     last_position: Point,
     states: Vec<State>,
@@ -462,11 +462,70 @@ pub struct Context<R: Renderer> {
     text_triangles_count: usize,
 }
 
-impl<'a, R: Renderer> Context<R> {
-    pub fn create(renderer: &mut R) -> Result<Context<R>, NonaError> {
+pub struct Canvas<'a, R: Renderer> {
+    context: &'a mut Context,
+    renderer: &'a mut R,
+}
+
+impl<'a, R: Renderer> std::ops::Deref for Canvas<'a, R> {
+    type Target = Context;
+
+    fn deref(&self) -> &Self::Target {
+        self.context
+    }
+}
+impl<R: Renderer> std::ops::DerefMut for Canvas<'_, R> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.context
+    }
+}
+
+impl<'a, R: Renderer> Canvas<'a, R> {
+    pub fn begin_frame(&mut self, clear_color: Option<Color>) -> Result<(), NonaError> {
+        self.context.begin_frame(self.renderer, clear_color)
+    }
+
+    pub fn end_frame(&mut self) -> Result<(), NonaError> {
+        self.context.end_frame(self.renderer)
+    }
+
+    pub fn create_image<D: AsRef<[u8]>>(
+        &mut self,
+        flags: ImageFlags,
+        data: D,
+    ) -> Result<ImageId, NonaError> {
+        self.context.create_image(self.renderer, flags, data)
+    }
+
+    pub fn update_image(&mut self, img: ImageId, data: &[u8]) -> Result<(), NonaError> {
+        self.context.update_image(self.renderer, img, data)
+    }
+
+    pub fn image_size(&self, img: ImageId) -> Result<(usize, usize), NonaError> {
+        self.context.image_size(self.renderer, img)
+    }
+
+    pub fn delete_image(&mut self, img: ImageId) -> Result<(), NonaError> {
+        self.context.delete_image(self.renderer, img)
+    }
+
+    pub fn fill(&mut self) -> Result<(), NonaError> {
+        self.context.fill(self.renderer)
+    }
+
+    pub fn stroke(&mut self) -> Result<(), NonaError> {
+        self.context.stroke(self.renderer)
+    }
+
+    pub fn text<S: AsRef<str>, P: Into<Point>>(&mut self, pt: P, text: S) -> Result<(), NonaError> {
+        self.context.text(self.renderer, pt, text)
+    }
+}
+
+impl Context {
+    pub fn create<R: Renderer>(renderer: &mut R) -> Result<Context, NonaError> {
         let fonts = Fonts::new(renderer)?;
         Ok(Context {
-            renderer: None,
             commands: Default::default(),
             last_position: Default::default(),
             states: vec![Default::default()],
@@ -491,18 +550,26 @@ impl<'a, R: Renderer> Context<R> {
         self.device_pixel_ratio = ratio;
     }
 
-    pub fn attach_renderer(&mut self, renderer: Option<R>) {
-        self.renderer = renderer;
+    pub fn attach_renderer<R: Renderer>(
+        &mut self,
+        renderer: &mut R,
+        call: impl Fn(&mut Canvas<R>),
+    ) {
+        let mut canvas = Canvas {
+            context: self,
+            renderer,
+        };
+        call(&mut canvas)
     }
 
-    pub fn begin_frame(&mut self, clear_color: Option<Color>) -> Result<(), NonaError> {
+    pub fn begin_frame<R: Renderer>(
+        &mut self,
+        renderer: &mut R,
+        clear_color: Option<Color>,
+    ) -> Result<(), NonaError> {
         let device_pixel_ratio = {
-            let renderer = self
-                .renderer
-                .as_mut()
-                .expect("Call attach_renderer to attach renderer first!");
             renderer.viewport(renderer.view_size().into(), renderer.device_pixel_ratio())?;
-            if let Some(color) = clear_color  {
+            if let Some(color) = clear_color {
                 renderer.clear_screen(color)
             }
             renderer.device_pixel_ratio()
@@ -517,19 +584,8 @@ impl<'a, R: Renderer> Context<R> {
         Ok(())
     }
 
-    pub fn end_frame(&mut self) -> Result<(), NonaError> {
-        let renderer = self
-            .renderer
-            .as_mut()
-            .expect("Call attach_renderer to attach renderer first!");
+    pub fn end_frame<R: Renderer>(&mut self, renderer: &mut R) -> Result<(), NonaError> {
         renderer.flush()
-    }
-
-    pub fn detach_renderer(&mut self) -> Option<R> {
-        self.renderer
-            .as_mut()
-            .expect("Call attach_renderer to attach renderer first!");
-        self.renderer.take()
     }
 
     pub fn save(&mut self) {
@@ -627,15 +683,12 @@ impl<'a, R: Renderer> Context<R> {
         self.state_mut().fill = paint;
     }
 
-    pub fn create_image<D: AsRef<[u8]>>(
+    pub fn create_image<D: AsRef<[u8]>, R: Renderer>(
         &mut self,
+        renderer: &mut R,
         flags: ImageFlags,
         data: D,
     ) -> Result<ImageId, NonaError> {
-        let renderer = self
-            .renderer
-            .as_mut()
-            .expect("Call attach_renderer to attach renderer first!");
         let img = image::load_from_memory(data.as_ref())
             .map_err(|err| NonaError::Texture(err.to_string()))?;
         let img = img.to_rgba8();
@@ -650,42 +703,45 @@ impl<'a, R: Renderer> Context<R> {
         Ok(img)
     }
 
-    pub fn create_image_from_file<P: AsRef<std::path::Path>>(
+    pub fn create_image_from_file<P: AsRef<std::path::Path>, R: Renderer>(
         &mut self,
+        renderer: &mut R,
         flags: ImageFlags,
         path: P,
     ) -> Result<ImageId, NonaError> {
         self.create_image(
+            renderer,
             flags,
             std::fs::read(path)
                 .map_err(|err| NonaError::Texture(format!("Error loading image: {}", err)))?,
         )
     }
 
-    pub fn update_image(&mut self, img: ImageId, data: &[u8]) -> Result<(), NonaError> {
-        let renderer = self
-            .renderer
-            .as_mut()
-            .expect("Call attach_renderer to attach renderer first!");
+    pub fn update_image<R: Renderer>(
+        &mut self,
+        renderer: &mut R,
+        img: ImageId,
+        data: &[u8],
+    ) -> Result<(), NonaError> {
         let (w, h) = renderer.texture_size(img.clone())?;
         renderer.update_texture(img, 0, 0, w, h, data)?;
         Ok(())
     }
 
-    pub fn image_size(&self, img: ImageId) -> Result<(usize, usize), NonaError> {
-        let renderer = self
-            .renderer
-            .as_ref()
-            .expect("Call attach_renderer to attach renderer first!");
+    pub fn image_size<R: Renderer>(
+        &self,
+        renderer: &R,
+        img: ImageId,
+    ) -> Result<(usize, usize), NonaError> {
         let res = renderer.texture_size(img)?;
         Ok(res)
     }
 
-    pub fn delete_image(&mut self, img: ImageId) -> Result<(), NonaError> {
-        let renderer = self
-            .renderer
-            .as_mut()
-            .expect("Call attach_renderer to attach renderer first!");
+    pub fn delete_image<R: Renderer>(
+        &mut self,
+        renderer: &mut R,
+        img: ImageId,
+    ) -> Result<(), NonaError> {
         renderer.delete_texture(img)?;
         Ok(())
     }
@@ -1059,11 +1115,7 @@ impl<'a, R: Renderer> Context<R> {
         self.ellipse(center.into(), radius, radius);
     }
 
-    pub fn fill(&mut self) -> Result<(), NonaError> {
-        let renderer = self
-            .renderer
-            .as_mut()
-            .expect("Call attach_renderer to attach renderer first!");
+    pub fn fill<R: Renderer>(&mut self, renderer: &mut R) -> Result<(), NonaError> {
         let state = self.states.last_mut().unwrap();
         let mut fill_paint = state.fill.clone();
 
@@ -1102,11 +1154,7 @@ impl<'a, R: Renderer> Context<R> {
         Ok(())
     }
 
-    pub fn stroke(&mut self) -> Result<(), NonaError> {
-        let renderer = self
-            .renderer
-            .as_mut()
-            .expect("Call attach_renderer to attach renderer first!");
+    pub fn stroke<R: Renderer>(&mut self, renderer: &mut R) -> Result<(), NonaError> {
         let state = self.states.last_mut().unwrap();
         let scale = state.xform.average_scale();
         let mut stroke_width = (state.stroke_width * scale).clamped(0.0, 200.0);
@@ -1222,11 +1270,12 @@ impl<'a, R: Renderer> Context<R> {
         }
     }
 
-    pub fn text<S: AsRef<str>, P: Into<Point>>(&mut self, pt: P, text: S) -> Result<(), NonaError> {
-        let renderer = self
-            .renderer
-            .as_mut()
-            .expect("Call attach_renderer to attach renderer first!");
+    pub fn text<S: AsRef<str>, P: Into<Point>, R: Renderer>(
+        &mut self,
+        renderer: &mut R,
+        pt: P,
+        text: S,
+    ) -> Result<(), NonaError> {
         let state = self.states.last().unwrap();
         let scale = state.xform.font_scale() * self.device_pixel_ratio;
         let invscale = 1.0 / scale;
