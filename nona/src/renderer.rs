@@ -17,7 +17,7 @@ pub trait Renderer {
     fn edge_antialias(&self) -> bool;
 
     fn view_size(&self) -> (f32, f32);
-    
+
     fn device_pixel_ratio(&self) -> f32;
 
     fn create_texture(

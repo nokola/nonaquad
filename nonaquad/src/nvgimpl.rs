@@ -71,7 +71,7 @@ struct GLPath {
     stroke_count: usize,
 }
 
-pub struct Renderer<'a> {
+pub struct Renderer {
     // shader: Shader,
     textures: Slab<Texture>, // TODO_REPLACE: bindings.images
     view: Extent,
@@ -84,7 +84,20 @@ pub struct Renderer<'a> {
     vertexes: Vec<Vertex>,
     indices: Vec<u16>,
     uniforms: Vec<shader::Uniforms>,
+}
+
+pub struct RendererCtx<'a> {
+    renderer: &'a mut Renderer,
     ctx: &'a mut MiniContext,
+}
+
+impl Renderer {
+    pub fn with_context<'a>(&'a mut self, ctx: &'a mut MiniContext) -> RendererCtx<'a> {
+        RendererCtx {
+            renderer: self,
+            ctx,
+        }
+    }
 }
 
 mod shader {
@@ -144,7 +157,7 @@ mod shader {
 const MAX_VERTICES: usize = 21845; // u16.max / 3 due to index buffer limitations
 const MAX_INDICES: usize = u16::max_value() as usize;
 
-impl<'a> Renderer<'a> {
+impl Renderer {
     pub fn create(ctx: &mut MiniContext) -> Result<Renderer, NonaError> {
         let shader = Shader::new(ctx, shader::VERTEX, shader::FRAGMENT, shader::meta())
             .map_err(|error| NonaError::Shader(error.to_string()))?;
@@ -189,7 +202,6 @@ impl<'a> Renderer<'a> {
         };
 
         Ok(Renderer {
-            ctx,
             pipeline,
             bindings,
             textures: Default::default(),
@@ -604,21 +616,132 @@ impl IntoTuple4<f32> for Color {
     }
 }
 
-impl renderer::Renderer for Renderer<'_> {
+impl renderer::Renderer for RendererCtx<'_> {
     fn edge_antialias(&self) -> bool {
-        true
+        self.renderer.edge_antialias()
     }
 
     fn view_size(&self) -> (f32, f32) {
-        self.ctx.screen_size()
+        self.renderer.view_size(self.ctx)
     }
 
     fn device_pixel_ratio(&self) -> f32 {
-        self.ctx.dpi_scale()
+        self.renderer.device_pixel_ratio(self.ctx)
     }
 
     fn create_texture(
         &mut self,
+        texture_type: TextureType,
+        width: usize,
+        height: usize,
+        flags: ImageFlags,
+        data: Option<&[u8]>,
+    ) -> Result<ImageId, NonaError> {
+        self.renderer
+            .create_texture(self.ctx, texture_type, width, height, flags, data)
+    }
+
+    fn delete_texture(&mut self, img: ImageId) -> Result<(), NonaError> {
+        self.renderer.delete_texture(img)
+    }
+
+    fn update_texture(
+        &mut self,
+        img: ImageId,
+        x: usize,
+        y: usize,
+        width: usize,
+        height: usize,
+        data: &[u8],
+    ) -> Result<(), NonaError> {
+        self.renderer
+            .update_texture(self.ctx, img, x, y, width, height, data)
+    }
+
+    fn texture_size(&self, img: ImageId) -> Result<(usize, usize), NonaError> {
+        self.renderer.texture_size(img)
+    }
+
+    fn viewport(&mut self, extent: Extent, device_pixel_ratio: f32) -> Result<(), NonaError> {
+        self.renderer.viewport(extent, device_pixel_ratio)
+    }
+
+    fn clear_screen(&mut self, color: Color) {
+        self.renderer.clear_screen(self.ctx, color)
+    }
+
+    fn flush(&mut self) -> Result<(), NonaError> {
+        self.renderer.flush(self.ctx)
+    }
+
+    fn fill(
+        &mut self,
+        paint: &Paint,
+        composite_operation: CompositeOperationState,
+        scissor: &Scissor,
+        fringe: f32,
+        bounds: Bounds,
+        paths: &[Path],
+    ) -> Result<(), NonaError> {
+        self.renderer.fill(
+            self.ctx,
+            paint,
+            composite_operation,
+            scissor,
+            fringe,
+            bounds,
+            paths,
+        )
+    }
+
+    fn stroke(
+        &mut self,
+        paint: &Paint,
+        composite_operation: CompositeOperationState,
+        scissor: &Scissor,
+        fringe: f32,
+        stroke_width: f32,
+        paths: &[Path],
+    ) -> Result<(), NonaError> {
+        self.renderer.stroke(
+            self.ctx,
+            paint,
+            composite_operation,
+            scissor,
+            fringe,
+            stroke_width,
+            paths,
+        )
+    }
+
+    fn triangles(
+        &mut self,
+        paint: &Paint,
+        composite_operation: CompositeOperationState,
+        scissor: &Scissor,
+        vertexes: &[Vertex],
+    ) -> Result<(), NonaError> {
+        self.renderer
+            .triangles(self.ctx, paint, composite_operation, scissor, vertexes)
+    }
+}
+
+impl Renderer {
+    fn edge_antialias(&self) -> bool {
+        true
+    }
+
+    fn view_size(&self, ctx: &MiniContext) -> (f32, f32) {
+        ctx.screen_size()
+    }
+
+    fn device_pixel_ratio(&self, ctx: &MiniContext) -> f32 {
+        ctx.dpi_scale()
+    }
+
+    fn create_texture(
+        &mut self,
+        ctx: &mut MiniContext,
         texture_type: TextureType,
         width: usize,
         height: usize,
@@ -630,7 +753,7 @@ impl renderer::Renderer for Renderer<'_> {
             TextureType::Alpha => TextureFormat::Alpha,
         };
         let tex: miniquad::Texture = miniquad::Texture::new(
-            self.ctx,
+            ctx,
             TextureAccess::Static,
             data,
             TextureParams {
@@ -664,6 +787,7 @@ impl renderer::Renderer for Renderer<'_> {
 
     fn update_texture(
         &mut self,
+        ctx: &mut MiniContext,
         img: ImageId,
         x: usize,
         y: usize,
@@ -672,14 +796,9 @@ impl renderer::Renderer for Renderer<'_> {
         data: &[u8],
     ) -> Result<(), NonaError> {
         if let Some(texture) = self.textures.get(img) {
-            texture.tex.update_texture_part(
-                self.ctx,
-                x as _,
-                y as _,
-                width as _,
-                height as _,
-                data,
-            );
+            texture
+                .tex
+                .update_texture_part(ctx, x as _, y as _, width as _, height as _, data);
             Ok(())
         } else {
             Err(NonaError::Texture(format!("texture '{}' not found", img)))
@@ -699,12 +818,11 @@ impl renderer::Renderer for Renderer<'_> {
         Ok(())
     }
 
-    fn clear_screen(&mut self, color: Color) {
-        self.ctx
-            .clear(Some((color.r, color.g, color.b, color.a)), None, None);
+    fn clear_screen(&mut self, ctx: &mut MiniContext, color: Color) {
+        ctx.clear(Some((color.r, color.g, color.b, color.a)), None, None);
     }
 
-    fn flush(&mut self) -> Result<(), NonaError> {
+    fn flush(&mut self, ctx: &mut MiniContext) -> Result<(), NonaError> {
         if self.calls.is_empty() {
             self.vertexes.clear();
             self.paths.clear();
@@ -713,16 +831,16 @@ impl renderer::Renderer for Renderer<'_> {
 
             return Ok(());
         }
-        self.ctx.begin_default_pass(PassAction::Nothing);
+        ctx.begin_default_pass(PassAction::Nothing);
 
         // glUseProgram(self.shader.prog); DONE
-        self.ctx.apply_pipeline(&self.pipeline);
-        self.ctx.apply_bindings(&self.bindings); // NEEDED - must be called before vertex buffer update; TODO_BUG: can be optimized in miniquad; we only need to update index buffer in most cases, see do_convex_fill()
-        self.bindings.vertex_buffers[0].update(self.ctx, &self.vertexes); // TODO: miniquad BUG? this line must show after apply_bindings otherwise no display of vertex buffer can happen
+        ctx.apply_pipeline(&self.pipeline);
+        ctx.apply_bindings(&self.bindings); // NEEDED - must be called before vertex buffer update; TODO_BUG: can be optimized in miniquad; we only need to update index buffer in most cases, see do_convex_fill()
+        self.bindings.vertex_buffers[0].update(ctx, &self.vertexes); // TODO: miniquad BUG? this line must show after apply_bindings otherwise no display of vertex buffer can happen
 
         // glEnable(GL_CULL_FACE);
         // glCullFace(GL_BACK);
-        self.ctx.set_cull_face(CullFace::Back);
+        ctx.set_cull_face(CullFace::Back);
         // glFrontFace(GL_CCW); // DONE front_face_order
 
         // glEnable(GL_BLEND); // TODO_BELOW
@@ -778,12 +896,12 @@ impl renderer::Renderer for Renderer<'_> {
             let call: &Call = call; // added to make rust-analyzer type inferrence work. See https://github.com/rust-analyzer/rust-analyzer/issues/4160
             let blend = &call.blend_func;
 
-            self.ctx.set_blend(Some(blend.color), Some(blend.alpha));
+            ctx.set_blend(Some(blend.color), Some(blend.alpha));
 
             // {
             //     // TODO: set image in a better way!!!
             //     self.bindings.images = vec![];
-            //     self.ctx.apply_bindings(&self.bindings);
+            //     ctx.apply_bindings(&self.bindings);
             // }
 
             // glBlendFuncSeparate( // TODO: DELETE once tested
@@ -796,14 +914,14 @@ impl renderer::Renderer for Renderer<'_> {
             // println!("Call {:?}", call.call_type); // DEBUG
 
             // update view size for the uniforms that may be in use
-            self.uniforms[call.uniform_offset].view_size = self.ctx.screen_size();
+            self.uniforms[call.uniform_offset].view_size = ctx.screen_size();
             if self.uniforms.len() > call.uniform_offset + 1 {
-                self.uniforms[call.uniform_offset + 1].view_size = self.ctx.screen_size();
+                self.uniforms[call.uniform_offset + 1].view_size = ctx.screen_size();
             }
             let uniforms: &shader::Uniforms = &self.uniforms[call.uniform_offset];
             if let Some(image_index) = call.image {
                 self.bindings.images[0] = self.textures[image_index].tex;
-                // self.ctx.apply_bindings(&self.bindings); // not needed - will be called in the call_type handlers below
+                // ctx.apply_bindings(&self.bindings); // not needed - will be called in the call_type handlers below
             }
 
             match call.call_type {
@@ -814,7 +932,7 @@ impl renderer::Renderer for Renderer<'_> {
                     let uniforms_next: &shader::Uniforms = &self.uniforms[call.uniform_offset + 1];
 
                     Self::do_fill(
-                        self.ctx,
+                        ctx,
                         call,
                         paths,
                         &self.bindings,
@@ -835,20 +953,20 @@ impl renderer::Renderer for Renderer<'_> {
                     // ];
                     // let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
 
-                    // self.bindings.vertex_buffers[0].update(self.ctx, &vertices);
+                    // self.bindings.vertex_buffers[0].update(ctx, &vertices);
                     // self.bindings
                     //     .index_buffer
-                    //     .update(self.ctx, &indices);
+                    //     .update(ctx, &indices);
 
-                    // self.ctx.apply_bindings(&self.bindings);
-                    // Self::set_uniforms(self.ctx, uniforms, call.image);
+                    // ctx.apply_bindings(&self.bindings);
+                    // Self::set_uniforms(ctx, uniforms, call.image);
 
-                    // self.ctx.draw(0, 3, 1);
+                    // ctx.draw(0, 3, 1);
 
                     let paths = &self.paths[call.path_offset..call.path_offset + call.path_count];
 
                     Self::do_convex_fill(
-                        self.ctx,
+                        ctx,
                         call,
                         paths,
                         &self.bindings,
@@ -861,7 +979,7 @@ impl renderer::Renderer for Renderer<'_> {
                     let uniforms_next: &shader::Uniforms = &self.uniforms[call.uniform_offset + 1];
 
                     Self::do_stroke(
-                        self.ctx,
+                        ctx,
                         call,
                         paths,
                         &self.bindings,
@@ -871,13 +989,12 @@ impl renderer::Renderer for Renderer<'_> {
                     );
                 }
                 CallType::Triangles => {
-                    Self::do_triangles(self.ctx, call, &self.bindings, &mut self.indices, uniforms);
+                    Self::do_triangles(ctx, call, &self.bindings, &mut self.indices, uniforms);
                 }
             }
         }
 
-        self.ctx.end_render_pass();
-        self.ctx.commit_frame();
+        ctx.end_render_pass();
 
         // TODO: commented, not needed??
         // glDisableVertexAttribArray(self.shader.loc_vertex);
@@ -885,7 +1002,7 @@ impl renderer::Renderer for Renderer<'_> {
         // glBindVertexArray(0);
 
         // glDisable(GL_CULL_FACE);
-        self.ctx.set_cull_face(CullFace::Nothing);
+        ctx.set_cull_face(CullFace::Nothing);
 
         // glBindBuffer(GL_ARRAY_BUFFER, 0);
         // glUseProgram(0);
@@ -900,6 +1017,7 @@ impl renderer::Renderer for Renderer<'_> {
 
     fn fill(
         &mut self,
+        ctx: &mut MiniContext,
         paint: &Paint,
         composite_operation: CompositeOperationState,
         scissor: &Scissor,
@@ -925,7 +1043,7 @@ impl renderer::Renderer for Renderer<'_> {
 
         // if GPU overflow
         if new_vertex_count >= MAX_VERTICES {
-            self.flush()?;
+            self.flush(ctx)?;
         }
 
         let mut call = Call {
@@ -996,6 +1114,7 @@ impl renderer::Renderer for Renderer<'_> {
 
     fn stroke(
         &mut self,
+        ctx: &mut MiniContext,
         paint: &Paint,
         composite_operation: CompositeOperationState,
         scissor: &Scissor,
@@ -1010,7 +1129,7 @@ impl renderer::Renderer for Renderer<'_> {
 
         // if GPU overflow
         if new_vertex_count >= MAX_VERTICES {
-            self.flush()?;
+            self.flush(ctx)?;
         }
 
         let mut call = Call {
@@ -1059,6 +1178,7 @@ impl renderer::Renderer for Renderer<'_> {
 
     fn triangles(
         &mut self,
+        ctx: &mut MiniContext,
         paint: &Paint,
         composite_operation: CompositeOperationState,
         scissor: &Scissor,
@@ -1069,7 +1189,7 @@ impl renderer::Renderer for Renderer<'_> {
 
         // if GPU overflow
         if new_vertex_count >= MAX_VERTICES {
-            self.flush()?;
+            self.flush(ctx)?;
         }
 
         let call = Call {
