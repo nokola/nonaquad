@@ -273,16 +273,18 @@ impl Renderer {
             // glDrawArrays(GL_TRIANGLE_FAN, path.fill_offset as i32, path.fill_count as i32);
             Self::add_triangle_fan(indices, path.fill_offset as u16, path.fill_count as u16);
         }
-        ctx.set_cull_face(CullFace::Back);
-        // glEnable(GL_CULL_FACE);
 
-        ctx.set_color_write((true, true, true, true));
-        // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        // draw
         bindings.index_buffer.update(ctx, &indices);
         ctx.apply_bindings(bindings);
         ctx.draw(0, indices.len() as i32, 1);
-
         indices.clear();
+
+        // glEnable(GL_CULL_FACE);
+        ctx.set_cull_face(CullFace::Back);
+
+        // glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        ctx.set_color_write((true, true, true, true));
         // self.set_uniforms(call.uniform_offset + 1, call.image);
         Self::set_uniforms(ctx, uniforms_next, call.image);
         // glStencilFunc(GL_EQUAL, 0x00, 0xff);
