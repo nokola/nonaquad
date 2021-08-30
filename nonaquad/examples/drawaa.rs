@@ -86,6 +86,28 @@ impl EventHandler for Stage {
                 canvas.stroke_width(3.0);
                 canvas.stroke().unwrap();
 
+                let origin: Point = Point::new(100.0, 100.0);
+
+                canvas.begin_path();
+                canvas.move_to(origin + nona::Point::new(2.0, 17.0));
+                canvas.bezier_to(
+                    origin + nona::Point::new(2.0, 17.0),
+                    origin + nona::Point::new(-15.0, 82.0),
+                    origin + nona::Point::new(-15.0, 83.0),
+                );
+                canvas.bezier_to(
+                    origin + nona::Point::new(-16.0, 85.0),
+                    origin + nona::Point::new(167.0, 84.0),
+                    origin + nona::Point::new(42.0, 65.0),
+                );
+                canvas.bezier_to(
+                    origin + nona::Point::new(11.0, 60.0),
+                    origin + nona::Point::new(71.0, 30.0),
+                    origin + nona::Point::new(71.0, 30.0),
+                );
+                canvas.fill_paint(Color::rgba(0.0, 1.0, 0.0, 1.0));
+                canvas.fill().unwrap();
+
                 canvas.end_frame().unwrap();
             });
 
