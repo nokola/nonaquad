@@ -3,3 +3,7 @@ members = [
     "nona",
     "nonaquad",
 ]
+
+# Uncomment for small builds
+[profile.release]
+lto = "thin"
