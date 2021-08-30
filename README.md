@@ -114,6 +114,13 @@ simplehttpserver
 ```
 Then open `http://localhost:8000`
 
+Reduce size further: Install [binaryen toolkit](https://github.com/WebAssembly/binaryen/releases), then run:
+```bash
+wasm-opt.exe -Os -o drawaa.wasm drawaa.wasm
+```
+
+Also check https://rustwasm.github.io/book/reference/code-size.html
+
 ## Android
 
 Recommended way to build for android is using Docker.   
