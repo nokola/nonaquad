@@ -60,12 +60,12 @@ nona.end_frame().unwrap();
 Screenshots produced from above example.
 
 ## Windows
-![Windows](https://user-images.githubusercontent.com/6869225/77838091-43983a80-7125-11ea-8581-83e51083e4f2.png)
+![Windows](https://user-images.githubusercontent.com/6869225/131318911-6bd99304-69cd-41e3-8633-058cb3d71500.png)
 
 ## Web
-![WebGL](https://user-images.githubusercontent.com/6869225/77838092-4e52cf80-7125-11ea-842f-665abfad59a9.png)
+![WebGL](https://user-images.githubusercontent.com/6869225/131320931-d9155434-f4b3-480f-93fb-9af5f43df5d8.png)
 
-WASM size before size stripping 640KB - ought to be enough for everyone. 
+WASM size before size stripping 754KB.
 
 ## Android
 APK size: 134KB
@@ -96,12 +96,20 @@ cargo run --example drawaa
 ```
 
 ## WASM
+First time setup:
 ```bash
+md examples
+copy ./nonaquad/examples/index.html ./examples 
 rustup target add wasm32-unknown-unknown
-cargo build --example drawaa --target wasm32-unknown-unknown && copy ".\target\wasm32-unknown-unknown\debug\examples\drawaa.wasm" ".\examples\drawaa.wasm" /y
+npm i -g simplehttpserver
+```
+
+Build and run:
+```bash
+cargo build --example drawaa --target wasm32-unknown-unknown --release
+copy ".\target\wasm32-unknown-unknown\release\examples\drawaa.wasm" ".\examples\drawaa.wasm" /y
 
 cd examples
-npm i -g simplehttpserver
 simplehttpserver
 ```
 Then open `http://localhost:8000`
@@ -124,10 +132,10 @@ With feature "log-impl" enabled all log calls will be forwarded to adb console.
 No code modifications for Android required, everything just works.
 
 ## iOS
-Not supported yet
+See build example for [miniquad](https://github.com/not-fl3/miniquad)
 
 # Roadmap
-The goal of nvg-miniquad is to have a stable, high-quality vector library on mobile, web, and desktop from the same source code.
+The goal of nonaquad is to have a stable, high-quality vector library on mobile, web, and desktop from the same source code.
 
 I will use it as a building block for a general purpose cross-platform app framework.
 
