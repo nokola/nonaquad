@@ -1253,7 +1253,7 @@ fn premul_color(color: Color) -> Color {
 }
 
 #[inline]
-fn xform_to_3x4(xform: Transform) -> [f32; 12] {
+fn _xform_to_3x4(xform: Transform) -> [f32; 12] {
     // 3 col 4 rows
     let mut m = [0f32; 12];
     let t = &xform.0;

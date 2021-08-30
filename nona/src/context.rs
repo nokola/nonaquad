@@ -4,7 +4,6 @@ use crate::renderer::{Renderer, Scissor, TextureType};
 use crate::{Color, Extent, NonaError, Point, Rect, Transform};
 use clamped::Clamp;
 use std::f32::consts::PI;
-use std::ops::Deref;
 
 pub type ImageId = usize;
 
