@@ -114,12 +114,14 @@ simplehttpserver
 ```
 Then open `http://localhost:8000`
 
-Reduce size further: Install [binaryen toolkit](https://github.com/WebAssembly/binaryen/releases), then run:
+Reduce size further: 
+1. Set environment variable `RUSTFLAGS="-C link-arg=--strip-debug"`. This will remove debug info.
+2. Install [binaryen toolkit](https://github.com/WebAssembly/binaryen/releases), then run:
 ```bash
 wasm-opt.exe -Os -o drawaa.wasm drawaa.wasm
 ```
-
-Also check https://rustwasm.github.io/book/reference/code-size.html
+3. Run `cargo install twiggy` and check out the twiggy docs: https://rustwasm.github.io/twiggy/. E.g. you can run `twiggy top drawaa.wasm` to see where size is used most.
+4. Also check https://rustwasm.github.io/book/reference/code-size.html
 
 ## Android
 
