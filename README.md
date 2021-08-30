@@ -114,7 +114,7 @@ simplehttpserver
 ```
 Then open `http://localhost:8000`
 
-**Reduce size further: **
+### To reduce WASM size further
 1. Set environment variable `RUSTFLAGS="-C link-arg=--strip-debug"`. This will remove debug info.
 2. Install [binaryen toolkit](https://github.com/WebAssembly/binaryen/releases), then run:
 ```bash
