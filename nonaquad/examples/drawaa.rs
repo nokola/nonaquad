@@ -49,22 +49,22 @@ impl EventHandler for Stage {
 
                 canvas.begin_path();
                 // canvas.rect((100.0, 100.0, 400.0, 300.0));
-                canvas.rounded_rect((100.0, 100.0, 400.0, 300.0), 30.0);
+                canvas.rounded_rect((100.0, 100.0, 400.0, 300.0), 10.0);
                 canvas.fill_paint(Gradient::Linear {
                     start: (100, 100).into(),
                     end: (400, 400).into(),
-                    start_color: Color::rgb_i(0xAA, 0x6C, 0x39),
-                    end_color: Color::rgb_i(0x88, 0x2D, 0x60),
+                    start_color: Color::hex(0x2c21e8FF),
+                    end_color: Color::hex(0x3c78e6FF),
                 });
                 canvas.fill().unwrap();
 
                 canvas.begin_path();
                 canvas.font("roboto");
-                canvas.font_size(40.0);
-                canvas.text_align(Align::TOP | Align::LEFT);
-                canvas.fill_paint(Color::rgb(1.0, 1.0, 1.0));
+                canvas.font_size(28.0);
+                canvas.text_align(Align::MIDDLE | Align::CENTER);
+                canvas.fill_paint(Color::hex(0xff3138FF));
                 canvas
-                    .text((10, 10), format!("alpha texture font - working!!!"))
+                    .text((290, 250), format!("Hello world!"))
                     .unwrap();
 
                 // canvas.begin_path();
@@ -121,6 +121,7 @@ fn main() {
     miniquad::start(
         conf::Conf {
             high_dpi: true,
+            window_title: String::from("Draw test"),
             ..Default::default()
         },
         |mut ctx| UserData::owning(Stage::new(&mut ctx), ctx),

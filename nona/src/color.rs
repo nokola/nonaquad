@@ -10,6 +10,15 @@ pub struct Color {
 }
 
 impl Color {
+    pub fn hex(rgba: u32) -> Color {
+        Color::rgba_i(
+            (rgba >> 24 & 0xff) as _,
+            (rgba >> 16 & 0xff) as _,
+            (rgba >> 8 & 0xff) as _,
+            (rgba & 0xff) as _,
+        )
+    }
+
     pub fn rgba(r: f32, g: f32, b: f32, a: f32) -> Color {
         Color { r, g, b, a }
     }
