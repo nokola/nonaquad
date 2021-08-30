@@ -1,9 +1,20 @@
-use std::ops::{Mul, MulAssign};
+use std::ops::{Add, Mul, MulAssign};
 
 #[derive(Debug, Copy, Clone, Default)]
 pub struct Point {
     pub x: f32,
     pub y: f32,
+}
+
+impl Add for Point {
+    type Output = Point;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
 }
 
 impl Point {
