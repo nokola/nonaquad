@@ -65,7 +65,7 @@ Screenshots produced from above example.
 ## Web
 ![WebGL](https://user-images.githubusercontent.com/6869225/131320931-d9155434-f4b3-480f-93fb-9af5f43df5d8.png)
 
-WASM size before size stripping 754KB.
+WASM size before size stripping 754KB. With basic stripping (see below) 391 KB
 
 ## Android
 APK size: 134KB
@@ -114,7 +114,7 @@ simplehttpserver
 ```
 Then open `http://localhost:8000`
 
-Reduce size further: 
+**Reduce size further: **
 1. Set environment variable `RUSTFLAGS="-C link-arg=--strip-debug"`. This will remove debug info.
 2. Install [binaryen toolkit](https://github.com/WebAssembly/binaryen/releases), then run:
 ```bash
