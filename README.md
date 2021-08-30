@@ -12,19 +12,21 @@ This library started as a port of [NanoVG](https://github.com/sunli829/nvg/tree/
 * ease-of-use
 * minimal dependencies
 
-## Supported platforms
+## Supported platforms - same as miniquad:
 
-* Windows, OpenGl 3
-* Linux, OpenGl 3
-* macOS, OpenGL 3
-* WASM, WebGl1 - tested on ios safari, ff, chrome
-* Android, GLES3
+|OS|Platform|
+|---|----------|
+|Windows| OpenGl 3|
+|Linux| OpenGl 3|
+| macOS| OpenGL 3|
+| iOS| GLES 3|
+| WASM| WebGl1 - tested on ios safari, ff, chrome|
+| Android|GLES3|
 
 ## Not supported, but desirable platforms
 
 * Android, GLES2 - work in progress.
-* Metal. Highly desirable.
-* Raspberry Pi - work in progress
+* Metal
 
 # Example
 
