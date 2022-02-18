@@ -4,6 +4,11 @@ Vector anti-aliased graphics renderer for Android, WASM, Desktop in Rust, using 
 
 This library started as a port of [NanoVG](https://github.com/sunli829/nvg/tree/master/nvg-gl) for [miniquad](https://github.com/not-fl3/miniquad). Use this library if you want to draw graphics for a quick experiment (game, paint app, etc.) or if you want to build other libraries on top (e.g. UI library.)
 
+## Notice
+I think this library is not good enough yet. I haven't worked on it for a while and not sure when I'll be able to again. I'm working on another app for note taking and wellbeing that I'd like to spend most of my time on.
+I have a plan of making a very easy developer UI experience and interface for nona. However, at the moment I think it may be a mistake picking this library, unless you'd like to be a main contributor and help develop it further.
+This said, please read below and see if any of the goals and ideas resonate with you:
+
 ## Goals
 * small and fast executables for mobile, desktop and web. 
 * safety
